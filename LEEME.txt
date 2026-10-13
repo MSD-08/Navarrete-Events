@@ -1,0 +1,6 @@
+Navarrete Events - sitio sin conexion
+
+1. Descomprima esta carpeta completa.
+2. Abra index.html con doble clic (Chrome, Edge o Safari).
+
+No mueva archivos fuera de la carpeta. El formulario prepara el mensaje para enviarlo por Instagram.
