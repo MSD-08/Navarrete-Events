@@ -1,0 +1,22 @@
+---
+import { path, type Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+interface Props { lang: Lang; title: string; text: string }
+const { lang, title, text } = Astro.props;
+const t = ui(lang);
+---
+<section class="ctab is-dark grain">
+  <div class="wrap ctab__inner">
+    <h2 class="display ctab__title" data-reveal set:html={title} />
+    <div class="ctab__side" data-reveal>
+      <p class="prose">{text}</p>
+      <a class="btn mt-m" href={path(lang, 'inquiry')}>{t.startProject}</a>
+    </div>
+  </div>
+</section>
+<style>
+  .ctab { padding-block: clamp(5rem, 11vw, 10rem); }
+  .ctab__inner { display: grid; grid-template-columns: 1.6fr 1fr; gap: 3rem; align-items: end; }
+  .ctab__title { font-size: clamp(2.8rem, 6.5vw, 7rem); max-width: 12ch; }
+  @media (max-width: 899px) { .ctab__inner { grid-template-columns: 1fr; } }
+</style>

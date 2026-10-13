@@ -1,0 +1,153 @@
+---
+import Base from '../layouts/Base.astro';
+import Img from '../components/Img.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+import { portfolio } from '../copy/portfolio';
+import { projects, projectLabel, type Category } from '../data/projects';
+import { countPhotos } from '../lib/media';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = ui(lang);
+const c = portfolio[lang];
+const cats: ('all' | Category)[] = ['all', 'weddings', 'xv', 'private'];
+const counts = Object.fromEntries(cats.map((k) => [k, k === 'all' ? projects.length : projects.filter((p) => p.category === k).length]));
+// Card rhythm: repeating editorial pattern of sizes and offsets
+const layout = ['a', 'b', 'c', 'd', 'e', 'f'];
+---
+<Base lang={lang} title={c.meta.title} description={c.meta.description} alternate={path(otherLang(lang), 'portfolio')} current="portfolio">
+  <section class="pf-head wrap">
+    <p class="label label--rule" data-reveal>{c.label} — {c.count(projects.length)}</p>
+    <h1 class="display pf-head__title" data-reveal set:html={c.title} />
+    <p class="lead pf-head__lede" data-reveal>{c.lede}</p>
+  </section>
+
+  <div class="pf-filter wrap" data-reveal>
+    <div class="pf-filter__inner" role="group" aria-label={c.filter} data-filter>
+      {cats.map((k, i) => (
+        <button type="button" class="pf-filter__btn" aria-pressed={i === 0 ? 'true' : 'false'} data-filter-value={k}>
+          {t.categories[k]} <sup class="pf-filter__n">{counts[k]}</sup>
+        </button>
+      ))}
+    </div>
+    <p class="visually-hidden" aria-live="polite" data-filter-status></p>
+  </div>
+
+  <section class="pf-list wrap" aria-label={c.label}>
+    <ol class="pf-grid" role="list" data-grid>
+      {projects.map((p, i) => (
+        <li class={`pf-item pf-item--${layout[i % layout.length]}`} data-category={p.category}>
+          <a href={path(lang, 'portfolio', p.slug)} class="pf-card" data-reveal>
+            <div class="pf-card__media media">
+              <Img id={p.cover} alt="" sizes="(min-width: 1100px) 40vw, (min-width: 700px) 50vw, 92vw" />
+            </div>
+            <div class="pf-card__meta">
+              <span class="num">{String(i + 1).padStart(2, '0')}</span>
+              <div class="pf-card__text">
+                <p class="label">{t.categorySingular[p.category]} · {projectLabel(p, lang)}{p.year ? ` · ${p.year}` : ''}</p>
+                <h2 class="pf-card__title serif">{p.title[lang]}</h2>
+                <p class="pf-card__dek">{p.dek[lang]}</p>
+              </div>
+              <p class="pf-card__count label">{countPhotos(p)} {lang === 'es' ? 'fotos' : 'photos'}</p>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</Base>
+
+<style>
+  .pf-head { padding-top: calc(var(--header-h) + clamp(4rem, 10vw, 9rem)); display: grid; gap: 2rem; }
+  .pf-head__title { max-width: 12ch; }
+  .pf-head__lede { max-width: 40rem; margin-left: auto; color: var(--fg-soft); }
+
+  .pf-filter { position: sticky; top: 0; z-index: 20; margin-top: clamp(3rem, 6vw, 5rem); transition: top 0.7s var(--ease-out); }
+  :global(html:has(.hdr.is-solid:not(.is-hidden))) .pf-filter { top: var(--header-h); }
+  .pf-filter__inner {
+    display: flex;
+    gap: 0.25rem 1.75rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 0.6rem;
+    border-block: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .pf-filter__inner::-webkit-scrollbar { display: none; }
+  .pf-filter__btn {
+    flex: none;
+    min-height: 44px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-soft);
+    transition: color 0.4s var(--ease);
+  }
+  .pf-filter__btn:hover, .pf-filter__btn[aria-pressed='true'] { color: var(--fg); }
+  .pf-filter__btn[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 0.6em; text-decoration-thickness: 1px; }
+  .pf-filter__n { font-family: var(--serif); font-style: italic; letter-spacing: 0; font-size: 0.8rem; color: var(--accent); }
+
+  .pf-list { padding-block: clamp(3.5rem, 7vw, 6rem) var(--section); }
+  .pf-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, 2.2vw, 2.5rem); row-gap: clamp(4rem, 8vw, 8rem); }
+  .pf-item--a { grid-column: 1 / span 6; }
+  .pf-item--b { grid-column: 8 / span 5; margin-top: 12vw; }
+  .pf-item--c { grid-column: 2 / span 4; }
+  .pf-item--d { grid-column: 7 / span 5; margin-top: -4vw; }
+  .pf-item--e { grid-column: 1 / span 5; }
+  .pf-item--f { grid-column: 7 / span 6; margin-top: 8vw; }
+  .pf-grid.is-filtered .pf-item { grid-column: span 6; margin-top: 0; }
+  .pf-grid.is-filtered .pf-item:nth-child(even of :not([hidden])) { margin-top: 8vw; }
+  .pf-item[hidden] { display: none; }
+
+  .pf-card { display: block; }
+  .pf-card__media { aspect-ratio: 4 / 5; }
+  .pf-item--c .pf-card__media, .pf-item--e .pf-card__media { aspect-ratio: 3 / 4; }
+  .pf-card__media :global(img) { transition: transform 1.8s var(--ease-out); }
+  .pf-card:hover .pf-card__media :global(img) { transform: scale(1.035); }
+  .pf-card__meta { display: grid; grid-template-columns: 2rem 1fr auto; gap: 1rem; margin-top: 1.3rem; align-items: baseline; }
+  .pf-card__title { margin-top: 0.45rem; font-size: clamp(1.5rem, 2.4vw, 2.4rem); line-height: 1.1; letter-spacing: -0.015em; }
+  .pf-card:hover .pf-card__title { font-style: italic; }
+  .pf-card__dek { margin-top: 0.6rem; color: var(--fg-soft); max-width: 30rem; font-size: 0.95rem; }
+  .pf-card__count { white-space: nowrap; }
+
+  @media (max-width: 899px) {
+    .pf-grid { row-gap: 4rem; }
+    .pf-item[class] { grid-column: 1 / -1; margin-top: 0; }
+    .pf-item:nth-child(3n + 2) { grid-column: 3 / -1; }
+    .pf-grid.is-filtered .pf-item { grid-column: 1 / -1; }
+    .pf-grid.is-filtered .pf-item:nth-child(even of :not([hidden])) { margin-top: 0; }
+    .pf-card__meta { grid-template-columns: 2rem 1fr; }
+    .pf-card__count { display: none; }
+  }
+</style>
+
+<script>
+  const group = document.querySelector<HTMLElement>('[data-filter]');
+  const grid = document.querySelector<HTMLElement>('[data-grid]');
+  const status = document.querySelector<HTMLElement>('[data-filter-status]');
+  if (group && grid) {
+    const buttons = [...group.querySelectorAll<HTMLButtonElement>('[data-filter-value]')];
+    const items = [...grid.querySelectorAll<HTMLElement>('[data-category]')];
+    const apply = (value: string, updateUrl = true) => {
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filterValue === value)));
+      let n = 0;
+      items.forEach((it) => {
+        const show = value === 'all' || it.dataset.category === value;
+        it.hidden = !show;
+        if (show) { n++; it.querySelector('[data-reveal]')?.classList.add('is-in'); }
+      });
+      grid.classList.toggle('is-filtered', value !== 'all');
+      if (status) status.textContent = `${buttons.find((b) => b.dataset.filterValue === value)?.firstChild?.textContent?.trim()} — ${n}`;
+      if (updateUrl) {
+        const url = new URL(location.href);
+        value === 'all' ? url.searchParams.delete('c') : url.searchParams.set('c', value);
+        history.replaceState(null, '', url);
+      }
+    };
+    buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filterValue!)));
+    const initial = new URL(location.href).searchParams.get('c');
+    if (initial && buttons.some((b) => b.dataset.filterValue === initial)) apply(initial, false);
+  }
+</script>

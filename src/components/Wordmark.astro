@@ -1,0 +1,40 @@
+---
+interface Props { size?: 'sm' | 'lg'; class?: string }
+const { size = 'sm', class: cls } = Astro.props;
+---
+<span class:list={['wordmark', `wordmark--${size}`, cls]}>
+  <span class="wordmark__name">Navarrete</span>
+  <span class="wordmark__sub">Events</span>
+</span>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    gap: 0.42em;
+  }
+  .wordmark__name {
+    font-family: var(--serif);
+    font-size: 1.32rem;
+    letter-spacing: 0.32em;
+    margin-right: -0.32em;
+    text-transform: uppercase;
+    font-variation-settings: 'opsz' 28;
+  }
+  .wordmark__sub {
+    font-family: var(--sans);
+    font-size: 0.5rem;
+    font-weight: 500;
+    letter-spacing: 0.62em;
+    margin-right: -0.62em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+  .wordmark--lg .wordmark__name { font-size: clamp(2rem, 6vw, 4.6rem); letter-spacing: 0.24em; margin-right: -0.24em; font-variation-settings: 'opsz' 96; }
+  .wordmark--lg .wordmark__sub { font-size: clamp(0.6rem, 1vw, 0.8rem); }
+  @media (max-width: 420px) {
+    .wordmark__name { font-size: 1.08rem; letter-spacing: 0.26em; margin-right: -0.26em; }
+  }
+</style>

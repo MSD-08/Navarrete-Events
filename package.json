@@ -1,0 +1,20 @@
+{
+  "name": "navarrete-events",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Navarrete Events — sitio web bilingüe (ES/EN) del estudio de planeación y diseño de eventos en Tijuana, Baja California.",
+  "scripts": {
+    "media": "node scripts/build-media.mjs",
+    "dev": "node scripts/build-media.mjs && astro dev",
+    "build": "node scripts/build-media.mjs && astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@fontsource-variable/bodoni-moda": "5.2.7",
+    "@fontsource-variable/jost": "5.2.7",
+    "astro": "5.18.2",
+    "sharp": "0.34.5"
+  }
+}

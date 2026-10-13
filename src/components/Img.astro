@@ -1,0 +1,37 @@
+---
+/**
+ * Responsive image from the photo library: AVIF + JPEG, width descriptors,
+ * intrinsic dimensions (no layout shift) and a dominant-colour placeholder.
+ */
+import { getMedia, srcset, src as srcOf } from '../lib/media';
+
+interface Props {
+  id: string;
+  alt: string;
+  sizes?: string;
+  priority?: boolean;
+  class?: string;
+  imgClass?: string;
+  /** CSS object-position, e.g. "50% 30%". */
+  position?: string;
+}
+const { id, alt, sizes = '100vw', priority = false, class: cls, imgClass, position } = Astro.props;
+const m = getMedia(id);
+const fallbackW = m.v.find((w) => w >= 960) ?? m.v[m.v.length - 1];
+---
+<picture class={cls} style={`--c:${m.c}`}>
+  <source type="image/avif" srcset={srcset(id, 'avif')} sizes={sizes} />
+  <img
+    src={srcOf(id, fallbackW, 'jpg')}
+    srcset={srcset(id, 'jpg')}
+    sizes={sizes}
+    width={m.w}
+    height={m.h}
+    alt={alt}
+    class={imgClass}
+    loading={priority ? 'eager' : 'lazy'}
+    decoding={priority ? 'sync' : 'async'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    style={`background-color:${m.c}${position ? `;object-position:${position}` : ''}`}
+  />
+</picture>

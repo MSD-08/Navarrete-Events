@@ -1,0 +1,45 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import JournalCard from '../components/JournalCard.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { journalCopy } from '../copy/journal';
+import { getArticles } from '../lib/journal';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = journalCopy[lang];
+const articles = await getArticles(lang);
+const [lead, ...rest] = articles;
+const hasDrafts = articles.some((a) => a.data.draft);
+---
+<Base lang={lang} title={c.meta.title} description={c.meta.description} alternate={path(otherLang(lang), 'journal')} current="journal" image={lead?.data.cover}>
+  <PageHead label={c.label} title={c.title} lede={c.lede} />
+
+  <section class="jr wrap" aria-label={c.label}>
+    {articles.length === 0 && <p class="lead">{c.empty}</p>}
+    {lead && (
+      <div class="jr__lead">
+        <JournalCard article={lead} lang={lang} size="lg" />
+      </div>
+    )}
+    {rest.length > 0 && (
+      <div class="jr__grid">
+        {rest.map((a, i) => <JournalCard article={a} lang={lang} delay={(i % 3) * 0.08} />)}
+      </div>
+    )}
+    {hasDrafts && <p class="fig jr__note">{c.draftsNote}</p>}
+  </section>
+</Base>
+
+<style>
+  .jr { padding-bottom: var(--section); display: grid; gap: clamp(4rem, 8vw, 7rem); }
+  .jr__lead { max-width: 72rem; }
+  .jr__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4rem clamp(1.5rem, 3vw, 3rem); }
+  .jr__grid > :global(:nth-child(3n + 2)) { margin-top: 5rem; }
+  .jr__note { max-width: 40rem; padding-top: 2rem; border-top: 1px solid var(--line); }
+  @media (max-width: 899px) {
+    .jr__grid { grid-template-columns: 1fr; }
+    .jr__grid > :global(:nth-child(n)) { margin-top: 0; }
+  }
+</style>

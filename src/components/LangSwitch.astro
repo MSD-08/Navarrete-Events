@@ -1,0 +1,52 @@
+---
+import type { Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+
+interface Props { lang: Lang; alternate: string; class?: string }
+const { lang, alternate, class: cls } = Astro.props;
+const t = ui(lang);
+const items = [
+  { code: 'es' as const, label: 'ES', name: 'Español' },
+  { code: 'en' as const, label: 'EN', name: 'English' },
+];
+---
+<div class:list={['lang', cls]} role="group" aria-label={t.langLabel}>
+  {items.map((it, i) => (
+    <>
+      {i > 0 && <span class="lang__sep" aria-hidden="true">|</span>}
+      {it.code === lang ? (
+        <span class="lang__item is-current" aria-current="true" lang={it.code}>
+          <abbr title={it.name}>{it.label}</abbr>
+        </span>
+      ) : (
+        <a class="lang__item" href={alternate} hreflang={it.code} lang={it.code} data-lang-switch={it.code} aria-label={`${it.name} — ${t.switchTo}`}>
+          {it.label}
+        </a>
+      )}
+    </>
+  ))}
+</div>
+
+<style>
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+  }
+  .lang__item {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.5rem;
+    min-height: 2.75rem;
+    padding-inline: 0.25rem;
+    opacity: 0.55;
+    transition: opacity 0.4s var(--ease);
+  }
+  .lang__item abbr { text-decoration: none; }
+  a.lang__item:hover { opacity: 1; }
+  .lang__item.is-current { opacity: 1; }
+  .lang__sep { opacity: 0.35; font-weight: 300; }
+</style>

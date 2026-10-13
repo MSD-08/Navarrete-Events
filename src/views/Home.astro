@@ -1,0 +1,309 @@
+---
+import Base from '../layouts/Base.astro';
+import HomeHero from '../components/HomeHero.astro';
+import Img from '../components/Img.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import Film from '../components/Film.astro';
+import ServicesList from '../components/ServicesList.astro';
+import JournalCard from '../components/JournalCard.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+import { home } from '../copy/home';
+import { getProject } from '../data/projects';
+import { site } from '../data/site';
+import { srcset } from '../lib/media';
+import { getArticles } from '../lib/journal';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = ui(lang);
+const c = home[lang];
+const alt = path(otherLang(lang), 'home');
+
+const signature = ['boda-ta', 'xv-montse', 'boda-ek', 'boda-dm', 'boda-jc', 'xv-ase'].map((s) => getProject(s)!);
+const articles = (await getArticles(lang)).slice(0, 3);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Navarrete Events',
+  url: site.url,
+  logo: `${site.url}/brand/logo.png`,
+  description: c.meta.description,
+  address: { '@type': 'PostalAddress', addressLocality: site.location.city, addressRegion: site.location.region, addressCountry: site.location.countryCode },
+  areaServed: site.location.city,
+  sameAs: [site.social.instagram.url],
+  ...(site.contact.email ? { email: site.contact.email } : {}),
+};
+---
+<Base
+  lang={lang}
+  title={c.meta.title}
+  description={c.meta.description}
+  alternate={alt}
+  current="home"
+  overlayHeader
+  preload={{ id: 'boda-ta/hero', srcset: srcset('boda-ta/hero', 'avif'), sizes: '(min-width: 1024px) 40vw, 100vw' }}
+  jsonLd={jsonLd}
+>
+  <HomeHero lang={lang} />
+
+  <!-- 01 · Brand introduction -->
+  <section class="intro section" aria-labelledby="intro-title">
+    <div class="wrap grid">
+      <p class="intro__label label label--rule" data-reveal><span class="num">01</span> {c.intro.label}</p>
+      <h2 id="intro-title" class="intro__statement h2" data-reveal set:html={c.intro.statement} />
+      <figure class="intro__fig intro__fig--a" data-reveal="image">
+        <div class="media" style="aspect-ratio: 4/5"><Img id="boda-ta/g05" alt={lang === 'es' ? 'Tulipanes blancos suspendidos en luz cálida' : 'White tulips suspended in warm light'} sizes="(min-width: 900px) 34vw, 70vw" /></div>
+        <figcaption class="fig">{c.intro.fig1}</figcaption>
+      </figure>
+      <div class="intro__body prose stack" data-reveal>
+        {c.intro.body.map((p) => <p>{p}</p>)}
+        <p><a class="link" href={path(lang, 'studio')}>{c.intro.cta} <span class="arrow" aria-hidden="true">→</span></a></p>
+      </div>
+      <figure class="intro__fig intro__fig--b" data-reveal="image" style="--delay:.15s">
+        <div class="media" style="aspect-ratio: 3/4"><Img id="boda-dm/g09" alt={lang === 'es' ? 'Menú impreso con ilustración del recinto sobre plato dorado y servilleta de terciopelo rojo' : 'A printed menu illustrated with the venue on a gilded charger with a red velvet napkin'} sizes="(min-width: 900px) 22vw, 50vw" /></div>
+        <figcaption class="fig">{c.intro.fig2}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 02 · Signature celebrations -->
+  <section class="sig section is-cream" aria-labelledby="sig-title">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="label label--rule" data-reveal><span class="num">02</span> {c.signature.label}</p>
+        <h2 id="sig-title" class="h1" data-reveal set:html={c.signature.title} />
+        <p class="sec-head__lede prose" data-reveal>{c.signature.lede}</p>
+      </header>
+      <div class="sig__grid">
+        {signature.map((p, i) => (
+          <div class={`sig__item sig__item--${i + 1}`}>
+            <ProjectCard project={p} lang={lang} index={i + 1} size={i % 3 === 0 ? 'lg' : 'md'} sizes={i % 3 === 0 ? '(min-width: 900px) 50vw, 92vw' : '(min-width: 900px) 30vw, 92vw'} />
+          </div>
+        ))}
+      </div>
+      <p class="center mt-l" data-reveal><a class="btn btn--ghost" href={path(lang, 'portfolio')}>{t.viewAll}</a></p>
+    </div>
+  </section>
+
+  <!-- 03 · The art of the experience -->
+  <section class="art is-dark grain" aria-labelledby="art-title">
+    <div class="art__band">
+      <div class="art__bg" data-parallax>
+        <Img id="boda-jc/hero" alt={lang === 'es' ? 'Novios besándose entre bruma y haces de luz frente a una luna escénica' : 'A couple kissing amid haze and beams of light before a stage moon'} sizes="100vw" />
+      </div>
+      <div class="art__copy wrap">
+        <p class="label label--rule" data-reveal><span class="num">03</span> {c.art.label}</p>
+        <h2 id="art-title" class="h1" data-reveal set:html={c.art.title} />
+        <p class="art__body lead" data-reveal>{c.art.body}</p>
+      </div>
+    </div>
+    <div class="wrap section-tight">
+      <ol class="moments" role="list">
+        {[
+          { id: 'boda-sf/g05', alt: { es: 'Arcos negros monumentales y mesas con follaje bajo una pérgola', en: 'Monumental black arches and tables dressed in greenery beneath a pergola' } },
+          { id: 'boda-ta/g02', alt: { es: 'Mesa con flores blancas, velas y cristalería a la luz de las velas', en: 'A table of white flowers, candles and crystal by candlelight' } },
+          { id: 'boda-xx/g09', alt: { es: 'Primer baile de los novios entre bruma baja y muros de rosas', en: 'The couple’s first dance in low haze before walls of roses' } },
+        ].map((m, i) => (
+          <li class="moment" data-reveal style={`--delay:${i * 0.12}s`}>
+            <div class="media" style="aspect-ratio: 4/5"><Img id={m.id} alt={m.alt[lang]} sizes="(min-width: 900px) 30vw, 92vw" /></div>
+            <p class="moment__n num">{c.art.moments[i].n}</p>
+            <h3 class="h3">{c.art.moments[i].title}</h3>
+            <p class="moment__text">{c.art.moments[i].text}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="art__film" data-reveal>
+        <Film src="/video/reel.mp4" poster="_reveal/hero-reel-poster" label={c.art.film} caption={c.art.filmCaption} />
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 · Services -->
+  <section class="services section" aria-labelledby="svc-title">
+    <div class="wrap">
+      <header class="sec-head sec-head--split">
+        <div>
+          <p class="label label--rule" data-reveal><span class="num">04</span> {c.services.label}</p>
+          <h2 id="svc-title" class="h1" data-reveal set:html={c.services.title} />
+        </div>
+        <div class="prose" data-reveal>
+          <p>{c.services.lede}</p>
+          <p class="label mt-s">{c.services.types}</p>
+        </div>
+      </header>
+      <ServicesList lang={lang} />
+      <p class="mt-m" data-reveal><a class="link" href={path(lang, 'experience')}>{c.services.cta} <span class="arrow" aria-hidden="true">→</span></a></p>
+    </div>
+  </section>
+
+  <!-- 05 · Philosophy & detail -->
+  <section class="detail section is-charcoal grain" aria-labelledby="detail-title">
+    <div class="wrap">
+      <p class="label label--rule" data-reveal><span class="num">05</span> {c.detail.label}</p>
+      <blockquote class="detail__quote" data-reveal>
+        <p id="detail-title" class="h2"><em>“</em>{c.detail.quote}<em>”</em></p>
+      </blockquote>
+      <div class="detail__grid">
+        {[
+          { id: 'boda-ek/g13', alt: { es: 'Rosas y hortensias blancas entre copas de cristal tallado', en: 'White roses and hydrangeas among cut-crystal glasses' } },
+          { id: 'boda-jc/g23', alt: { es: 'Velas altas encendidas en candelabros de cristal', en: 'Tall lit tapers in crystal candelabra' } },
+          { id: 'xv-ase/g08', alt: { es: 'Lugar en la mesa con plato de borde dorado, cubiertos dorados y tarjeta personalizada', en: 'A place setting with gold-rimmed plate, gilded cutlery and a personalised card' } },
+        ].map((d, i) => (
+          <figure class={`detail__fig detail__fig--${i + 1}`} data-reveal="image" style={`--delay:${i * 0.12}s`}>
+            <div class="media" style="aspect-ratio: 3/4"><Img id={d.id} alt={d.alt[lang]} sizes="(min-width: 900px) 28vw, 80vw" /></div>
+            <figcaption class="fig">{c.detail.figs[i]}</figcaption>
+          </figure>
+        ))}
+        <p class="detail__body prose" data-reveal>{c.detail.body}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 · Journal -->
+  {articles.length > 0 && (
+    <section class="journal section" aria-labelledby="jr-title">
+      <div class="wrap">
+        <header class="sec-head sec-head--split">
+          <div>
+            <p class="label label--rule" data-reveal><span class="num">06</span> {c.journal.label}</p>
+            <h2 id="jr-title" class="h1" data-reveal set:html={c.journal.title} />
+          </div>
+          <p data-reveal><a class="link" href={path(lang, 'journal')}>{c.journal.cta} <span class="arrow" aria-hidden="true">→</span></a></p>
+        </header>
+        <div class="journal__grid">
+          {articles.map((a, i) => <JournalCard article={a} lang={lang} delay={i * 0.1} />)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- 07 · Invitation -->
+  <section class="invite is-cream" aria-labelledby="inv-title">
+    <div class="invite__grid">
+      <div class="invite__media media" data-reveal="image">
+        <Img id="xv-montse/g09" alt={lang === 'es' ? 'Candil de cristal en blanco y negro sobre mesas con flores blancas' : 'A crystal chandelier in black and white above tables of white flowers'} sizes="(min-width: 900px) 50vw, 100vw" />
+      </div>
+      <div class="invite__copy">
+        <p class="label label--rule" data-reveal><span class="num">07</span> {c.invite.label}</p>
+        <h2 id="inv-title" class="display invite__title" data-reveal set:html={c.invite.title} />
+        <p class="prose" data-reveal>{c.invite.body}</p>
+        <div class="cta-row mt-m" data-reveal>
+          <a class="btn" href={path(lang, 'inquiry')}>{c.invite.cta}</a>
+          <a class="link" href={site.social.instagram.url} rel="noopener" target="_blank">{c.invite.secondary} <span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .sec-head { display: grid; gap: 1.5rem; margin-bottom: clamp(3rem, 7vw, 6.5rem); }
+  .sec-head__lede { margin-top: 0.5rem; }
+  .sec-head--split { grid-template-columns: 1fr; align-items: end; }
+  @media (min-width: 900px) {
+    .sec-head--split { grid-template-columns: 1.4fr 1fr; gap: 3rem; }
+    .sec-head--split > :last-child { justify-self: end; }
+  }
+  .sec-head :global(.h1) { max-width: 14ch; }
+
+  /* Intro */
+  .intro .grid { row-gap: 3rem; align-items: start; }
+  .intro__label { grid-column: 1 / -1; }
+  .intro__statement { grid-column: 1 / span 10; max-width: 22ch; font-size: clamp(2rem, 4.2vw, 4.4rem); line-height: 1.08; }
+  .intro__fig--a { grid-column: 1 / span 5; }
+  .intro__body { grid-column: 7 / span 5; align-self: center; }
+  .intro__fig--b { grid-column: 9 / span 3; margin-top: -12vw; }
+  .intro__fig figcaption { margin-top: 0.8rem; }
+  @media (max-width: 899px) {
+    .intro__statement { grid-column: 1 / -1; }
+    .intro__fig--a { grid-column: 1 / span 9; }
+    .intro__body { grid-column: 1 / -1; }
+    .intro__fig--b { grid-column: 6 / -1; margin-top: 0; }
+  }
+
+  /* Signature grid: asymmetric editorial rhythm */
+  .sig__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, 2.2vw, 2.5rem); row-gap: clamp(3.5rem, 8vw, 8rem); }
+  .sig__item--1 { grid-column: 1 / span 6; }
+  .sig__item--2 { grid-column: 8 / span 4; margin-top: 14vw; }
+  .sig__item--3 { grid-column: 2 / span 4; margin-top: 4vw; }
+  .sig__item--4 { grid-column: 7 / span 6; }
+  .sig__item--5 { grid-column: 1 / span 6; }
+  .sig__item--6 { grid-column: 8 / span 4; margin-top: 14vw; }
+  @media (max-width: 899px) {
+    .sig__grid { row-gap: 3.5rem; }
+    .sig__item { grid-column: 1 / -1 !important; margin-top: 0 !important; }
+    .sig__item:nth-child(even) { grid-column: 3 / -1 !important; }
+  }
+
+  /* Art of experience */
+  .art__band { position: relative; min-height: min(100svh, 62rem); display: grid; align-items: end; overflow: hidden; }
+  .art__bg { position: absolute; inset: -8% 0; }
+  .art__bg :global(picture) { height: 100%; }
+  .art__bg :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
+  .art__band::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--espresso) 2%, rgb(42 31 25 / 0.55) 40%, rgb(42 31 25 / 0.1) 75%); }
+  .art__copy { position: relative; z-index: 3; padding-block: 8rem clamp(3rem, 6vw, 5rem); display: grid; gap: 1.5rem; }
+  .art__copy .h1 { max-width: 13ch; }
+  .art__body { max-width: 36rem; color: var(--fg-soft); }
+  .moments { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.5rem, 3vw, 3.5rem); }
+  .moment:nth-child(2) { margin-top: 5rem; }
+  .moment:nth-child(3) { margin-top: 10rem; }
+  .moment__n { margin-top: 1.4rem; font-size: 1.1rem; }
+  .moment .h3 { margin-top: 0.3rem; }
+  .moment__text { margin-top: 0.6rem; color: var(--fg-soft); max-width: 26rem; }
+  .art__film { margin-top: clamp(4rem, 9vw, 8rem); max-width: 68rem; margin-inline: auto; }
+  @media (max-width: 899px) {
+    .moments { grid-template-columns: 1fr; gap: 3.5rem; }
+    .moment:nth-child(n) { margin-top: 0; }
+    .moment:nth-child(2) { padding-left: 15%; }
+  }
+
+  /* Detail */
+  .detail__quote { margin-block: 2.5rem clamp(4rem, 8vw, 7rem); }
+  .detail__quote .h2 { max-width: 24ch; font-size: clamp(2rem, 4vw, 4rem); line-height: 1.12; }
+  .detail__quote em { color: var(--accent); }
+  .detail__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, 2.2vw, 2.5rem); row-gap: 2.5rem; align-items: start; }
+  .detail__fig figcaption { margin-top: 0.8rem; }
+  .detail__fig--1 { grid-column: 1 / span 3; margin-top: 8rem; }
+  .detail__fig--2 { grid-column: 5 / span 4; }
+  .detail__fig--3 { grid-column: 10 / span 3; margin-top: 14rem; }
+  .detail__body { grid-column: 1 / span 4; grid-row: 2; margin-top: -4rem; }
+  @media (max-width: 899px) {
+    .detail__fig--1 { grid-column: 1 / span 6; margin-top: 4rem; }
+    .detail__fig--2 { grid-column: 7 / -1; }
+    .detail__fig--3 { grid-column: 3 / span 8; margin-top: 0; }
+    .detail__body { grid-column: 1 / -1; grid-row: auto; margin-top: 1rem; }
+  }
+
+  /* Journal */
+  .journal__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.5rem, 3vw, 3rem); }
+  @media (max-width: 899px) { .journal__grid { grid-template-columns: 1fr; gap: 3.5rem; } }
+
+  /* Invitation */
+  .invite__grid { display: grid; grid-template-columns: 1fr 1fr; min-height: min(100svh, 58rem); }
+  .invite__media { min-height: 60vh; }
+  .invite__media :global(picture), .invite__media :global(img) { height: 100%; }
+  .invite__copy { display: grid; align-content: center; gap: 1.6rem; padding: clamp(3rem, 8vw, 8rem) var(--gutter); }
+  .invite__title { font-size: clamp(3rem, 7vw, 7.5rem); max-width: 10ch; }
+  @media (max-width: 899px) {
+    .invite__grid { grid-template-columns: 1fr; }
+    .invite__media { min-height: 0; aspect-ratio: 4 / 5; }
+  }
+</style>
+
+<script>
+  // Gentle parallax on the full-bleed band (disabled for reduced motion)
+  const el = document.querySelector<HTMLElement>('[data-parallax]');
+  if (el && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let raf = 0;
+    const update = () => {
+      const r = el.parentElement!.getBoundingClientRect();
+      const p = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+      el.style.transform = `translate3d(0, ${(p * -6).toFixed(2)}%, 0)`;
+      raf = 0;
+    };
+    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+    update();
+  }
+</script>

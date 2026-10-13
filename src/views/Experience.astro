@@ -1,0 +1,119 @@
+---
+import Base from '../layouts/Base.astro';
+import Img from '../components/Img.astro';
+import PageHead from '../components/PageHead.astro';
+import Film from '../components/Film.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { experience } from '../copy/experience';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = experience[lang];
+---
+<Base lang={lang} title={c.meta.title} description={c.meta.description} alternate={path(otherLang(lang), 'experience')} current="experience" image="boda-sf/g06">
+  <PageHead label={c.label} title={c.title} lede={c.lede} />
+
+  <section class="stages wrap" aria-labelledby="stages-title">
+    <h2 id="stages-title" class="label label--rule">{c.stagesLabel}</h2>
+    <ol class="stages__list" role="list">
+      {c.stages.map((s, i) => (
+        <li class:list={['stage', { 'stage--flip': i % 2 === 1 }]}>
+          <div class="stage__media media" data-reveal="image">
+            <Img id={s.image} alt={s.alt} sizes="(min-width: 900px) 38vw, 92vw" />
+          </div>
+          <div class="stage__copy" data-reveal>
+            <p class="stage__n num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</p>
+            <h3 class="h2 stage__title"><span class="visually-hidden">{i + 1}. </span>{s.title}</h3>
+            <p class="stage__text">{s.text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="xp-film is-charcoal grain section" aria-labelledby="film-title">
+    <div class="wrap xp-film__grid">
+      <div class="xp-film__copy">
+        <p class="label label--rule" data-reveal>{c.filmLabel}</p>
+        <h2 id="film-title" class="h2 mt-s" data-reveal set:html={c.filmTitle} />
+        <p class="prose mt-s" data-reveal>{c.filmText}</p>
+      </div>
+      <div data-reveal>
+        <Film src="/video/build.mp4" poster="_reveal/build-poster" label={c.filmPlay} caption={c.filmCaption} />
+      </div>
+    </div>
+  </section>
+
+  <section class="xp-reveal section wrap" aria-labelledby="reveal-title">
+    <div class="xp-reveal__grid">
+      <div>
+        <p class="label label--rule" data-reveal>{c.revealLabel}</p>
+        <h2 id="reveal-title" class="h2 mt-s" data-reveal set:html={c.revealTitle} />
+        <p class="prose mt-s" data-reveal>{c.revealText}</p>
+      </div>
+      <div class="xp-reveal__media" data-reveal>
+        <BeforeAfter
+          before="xv-michelle/before"
+          after="xv-michelle/after"
+          caption={c.revealCaption}
+          labels={{ before: c.before, after: c.after, compare: c.compare }}
+          alt={{
+            before: lang === 'es' ? 'Antes: espacio abierto con columnas y pasto sintético' : 'Before: an open space with columns and artificial turf',
+            after: lang === 'es' ? 'Después: salón con muros de terracota, arcos con follaje y mesas montadas' : 'After: a room with terracotta walls, greenery-dressed arches and dressed tables',
+          }}
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="promise section is-cream" aria-labelledby="promise-title">
+    <div class="wrap">
+      <h2 id="promise-title" class="label label--rule" data-reveal>{c.promiseLabel}</h2>
+      <ul class="promise__list" role="list">
+        {c.promises.map((p, i) => (
+          <li data-reveal style={`--delay:${i * 0.08}s`}>
+            <p class="h3 serif"><em>{p.title}</em></p>
+            <p class="promise__text">{p.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand lang={lang} title={c.ctaTitle} text={c.ctaText} />
+</Base>
+
+<style>
+  .stages__list { margin-top: clamp(3rem, 6vw, 5rem); display: grid; gap: clamp(5rem, 11vw, 10rem); padding-bottom: var(--section); counter-reset: s; }
+  .stage { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, 2.2vw, 2.5rem); align-items: center; }
+  .stage__media { grid-column: 1 / span 5; aspect-ratio: 4 / 5; }
+  .stage__copy { grid-column: 7 / span 5; }
+  .stage--flip .stage__media { grid-column: 8 / span 5; grid-row: 1; }
+  .stage--flip .stage__copy { grid-column: 2 / span 5; grid-row: 1; }
+  .stage__n { font-size: clamp(3.5rem, 7vw, 6.5rem); line-height: 1; }
+  .stage__title { margin-top: 1rem; font-size: clamp(2rem, 3.6vw, 3.6rem); }
+  .stage__text { margin-top: 1.25rem; color: var(--fg-soft); max-width: 30rem; }
+  @media (max-width: 899px) {
+    .stage { row-gap: 2rem; }
+    .stage__media, .stage--flip .stage__media { grid-column: 1 / span 10; grid-row: auto; }
+    .stage--flip .stage__media { grid-column: 3 / -1; }
+    .stage__copy, .stage--flip .stage__copy { grid-column: 1 / -1; grid-row: auto; }
+  }
+
+  .xp-film__grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: clamp(2rem, 5vw, 6rem); align-items: center; }
+  .xp-film__grid .h2 { max-width: 14ch; }
+  @media (max-width: 899px) { .xp-film__grid { grid-template-columns: 1fr; } }
+
+  .xp-reveal__grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(2rem, 5vw, 6rem); align-items: center; }
+  .xp-reveal__grid .h2 { max-width: 14ch; }
+  .xp-reveal__media { max-width: 36rem; width: 100%; justify-self: end; }
+  @media (max-width: 899px) { .xp-reveal__grid { grid-template-columns: 1fr; } .xp-reveal__media { justify-self: stretch; } }
+
+  .promise__list { margin-top: clamp(3rem, 6vw, 5rem); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.5rem; }
+  .promise__list li { border-top: 1px solid var(--line); padding-top: 1.5rem; }
+  .promise__text { margin-top: 0.8rem; color: var(--fg-soft); }
+  @media (max-width: 899px) { .promise__list { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .promise__list { grid-template-columns: 1fr; } }
+</style>

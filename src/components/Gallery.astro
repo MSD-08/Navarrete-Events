@@ -1,0 +1,102 @@
+---
+import Img from './Img.astro';
+import { buildGallery, photoAlt, countPhotos } from '../lib/media';
+import type { Project } from '../data/projects';
+import type { Lang } from '../i18n/routes';
+
+interface Props { project: Project; lang: Lang; labels: { open: string; more: string; gallery: string } }
+const { project: p, lang, labels } = Astro.props;
+const rows = buildGallery(p);
+const total = countPhotos(p);
+// Number photos in display order (the hero is n°1)
+let n = 1;
+const numbered = rows.map((r) => ({ ...r, nums: r.ids.map(() => ++n) }));
+// Progressive loading: long galleries reveal the rest on demand
+const LIMIT = 14;
+const visible = numbered.slice(0, LIMIT);
+const rest = numbered.slice(LIMIT);
+const sizesFor = (kind: string) =>
+  kind === 'wide' || kind === 'diptych' ? '(min-width: 900px) 50vw, 100vw'
+  : kind === 'trio' ? '(min-width: 900px) 30vw, 46vw'
+  : kind === 'pair' ? '(min-width: 900px) 42vw, 92vw'
+  : '(min-width: 900px) 52vw, 92vw';
+---
+<section class="gal wrap" aria-label={labels.gallery} data-lb-group>
+  {[visible, rest].map((chunk, ci) => chunk.length > 0 && (
+    <div class="gal__chunk" hidden={ci === 1 ? true : undefined} data-gal-rest={ci === 1 ? '' : undefined}>
+      {chunk.map((row) => (
+        <div class:list={['gal__row', `gal__row--${row.kind}`, 'variant' in row && `gal__row--${row.variant}`]}>
+          {row.ids.map((id, k) => {
+            const alt = photoAlt(p, lang, row.nums[k], total);
+            return (
+              <figure class="gal__item" data-reveal="image" style={`--delay:${k * 0.1}s`}>
+                <button type="button" class="gal__btn media" data-lb data-lb-alt={alt} aria-label={`${labels.open}: ${alt}`}>
+                  <Img id={id} alt={alt} sizes={sizesFor(row.kind)} />
+                </button>
+                {row.kind !== 'diptych' && <figcaption class="gal__n num" aria-hidden="true">{String(row.nums[k]).padStart(2, '0')}</figcaption>}
+              </figure>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  ))}
+  {rest.length > 0 && (
+    <p class="center gal__more-wrap"><button type="button" class="btn btn--ghost" data-gal-more>{labels.more} <span class="num">+{rest.reduce((a, r) => a + r.ids.length, 0)}</span></button></p>
+  )}
+</section>
+
+<style>
+  .gal { display: grid; gap: clamp(2.5rem, 6vw, 6rem); }
+  .gal__chunk { display: grid; gap: clamp(2.5rem, 6vw, 6rem); }
+  .gal__chunk[hidden] { display: none; }
+  .gal__row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(0.75rem, 2.2vw, 2.5rem); align-items: start; }
+  .gal__item { position: relative; }
+  .gal__btn { display: block; width: 100%; cursor: zoom-in; }
+  .gal__btn :global(img) { transition: transform 1.6s var(--ease-out); }
+  .gal__btn:hover :global(img) { transform: scale(1.02); }
+  .gal__n { position: absolute; left: 0; bottom: -1.9rem; font-size: 0.85rem; }
+
+  .gal__row--single.gal__row--center .gal__item { grid-column: 3 / span 8; }
+  .gal__row--single.gal__row--left .gal__item { grid-column: 1 / span 6; }
+  .gal__row--single.gal__row--right .gal__item { grid-column: 6 / span 6; }
+  .gal__row--wide .gal__item { grid-column: 1 / -1; }
+  .gal__row--pair.gal__row--even .gal__item:nth-child(1) { grid-column: 1 / span 6; }
+  .gal__row--pair.gal__row--even .gal__item:nth-child(2) { grid-column: 7 / span 6; }
+  .gal__row--pair.gal__row--stagger .gal__item:nth-child(1) { grid-column: 1 / span 7; }
+  .gal__row--pair.gal__row--stagger .gal__item:nth-child(2) { grid-column: 9 / span 4; margin-top: 30%; }
+  .gal__row--trio .gal__item:nth-child(1) { grid-column: 1 / span 4; }
+  .gal__row--trio .gal__item:nth-child(2) { grid-column: 5 / span 4; margin-top: 12%; }
+  .gal__row--trio .gal__item:nth-child(3) { grid-column: 9 / span 4; }
+  .gal__row--diptych { column-gap: 0; }
+  .gal__row--diptych .gal__item:nth-child(1) { grid-column: 1 / span 6; }
+  .gal__row--diptych .gal__item:nth-child(2) { grid-column: 7 / span 6; }
+
+  @media (max-width: 699px) {
+    .gal, .gal__chunk { gap: 2.25rem; }
+    .gal__row { row-gap: 2.25rem; }
+    .gal__row .gal__item:nth-child(n) { grid-column: 1 / -1; margin-top: 0; }
+    .gal__row--single.gal__row--left .gal__item, .gal__row--pair .gal__item:nth-child(2) { grid-column: 3 / -1; }
+    .gal__row--trio .gal__item:nth-child(1), .gal__row--trio .gal__item:nth-child(2) { grid-column: span 6; }
+    .gal__row--trio .gal__item:nth-child(2) { margin-top: 18%; }
+    .gal__row--trio .gal__item:nth-child(3) { grid-column: 2 / span 10; }
+    .gal__row--diptych { row-gap: 0; }
+    .gal__row--diptych .gal__item:nth-child(n) { grid-column: span 6; }
+    .gal__n { position: static; margin-top: 0.5rem; }
+  }
+  .gal__more-wrap .num { margin-left: 0.4rem; letter-spacing: 0; text-transform: none; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-gal-more]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const rest = btn.closest('.gal')!.querySelector<HTMLElement>('[data-gal-rest]');
+      if (!rest) return;
+      rest.hidden = false;
+      rest.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-in'));
+      const first = rest.querySelector<HTMLElement>('[data-lb]');
+      btn.parentElement!.remove();
+      first?.focus({ preventScroll: false });
+    });
+  });
+</script>

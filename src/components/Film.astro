@@ -1,0 +1,76 @@
+---
+import { largest, getMedia } from '../lib/media';
+
+interface Props {
+  src: string;
+  poster: string;
+  label: string;
+  caption?: string;
+  class?: string;
+}
+const { src, poster, label, caption, class: cls } = Astro.props;
+const m = getMedia(poster);
+---
+<figure class:list={['film', cls]} data-film>
+  <div class="film__frame media" style={`--c:${m.c}; aspect-ratio:${m.w}/${m.h}`}>
+    <video preload="none" playsinline muted loop poster={largest(poster)} width={m.w} height={m.h} aria-label={caption ?? label}>
+      <source src={src} type="video/mp4" />
+    </video>
+    <button class="film__play" type="button" data-film-play>
+      <span class="film__icon" aria-hidden="true"></span>
+      <span class="film__label">{label}</span>
+    </button>
+  </div>
+  {caption && <figcaption class="fig film__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  .film__frame { position: relative; }
+  .film video { width: 100%; height: 100%; object-fit: cover; }
+  .film__play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1.1rem;
+    color: #f5eee3;
+    background: linear-gradient(180deg, rgb(20 15 12 / 0.05), rgb(20 15 12 / 0.45));
+    transition: background 0.8s var(--ease);
+  }
+  .film__play:hover { background: linear-gradient(180deg, rgb(20 15 12 / 0.15), rgb(20 15 12 / 0.6)); }
+  .film__icon {
+    position: relative;
+    width: clamp(4.5rem, 8vw, 6.5rem);
+    aspect-ratio: 1;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    transition: transform 0.9s var(--ease-out);
+  }
+  .film__icon::after {
+    content: '';
+    position: absolute;
+    left: 54%; top: 50%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 0.5rem 0 0.5rem 0.85rem;
+    border-color: transparent transparent transparent currentColor;
+  }
+  .film__play:hover .film__icon { transform: scale(1.08); }
+  .film__label { font-size: var(--fs-label); font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; }
+  .film.is-playing .film__play { opacity: 0; pointer-events: none; }
+  .film__caption { margin-top: 0.9rem; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-film]').forEach((fig) => {
+    const video = fig.querySelector('video')!;
+    const btn = fig.querySelector<HTMLButtonElement>('[data-film-play]')!;
+    btn.addEventListener('click', () => {
+      video.controls = true;
+      fig.classList.add('is-playing');
+      video.play().catch(() => {});
+      video.focus();
+    });
+  });
+</script>

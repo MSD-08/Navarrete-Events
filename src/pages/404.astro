@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import Img from '../components/Img.astro';
+---
+<Base lang="es" title="Página no encontrada · Page not found" description="La página que buscan no existe. The page you are looking for does not exist." alternate="/en/" noindex>
+  <section class="nf">
+    <div class="nf__media media"><Img id="boda-jc/g23" alt="" sizes="(min-width: 900px) 40vw, 100vw" /></div>
+    <div class="nf__copy wrap">
+      <p class="label label--rule"><span class="num">404</span></p>
+      <h1 class="display nf__title">Esta página <em>no existe</em></h1>
+      <p class="lead">Quizá cambió de lugar. Les invitamos a volver al inicio o a recorrer el portafolio.</p>
+      <div class="cta-row">
+        <a class="btn" href="/es/">Volver al inicio</a>
+        <a class="link" href="/es/portafolio/">Portafolio <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+      <hr class="rule nf__rule" />
+      <div lang="en" class="nf__en">
+        <p class="h3"><em>This page doesn’t exist.</em></p>
+        <p>It may have moved. Return to the <a class="nf__a" href="/en/">home page</a> or explore the <a class="nf__a" href="/en/portfolio/">portfolio</a>.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf { display: grid; grid-template-columns: 1fr 1.2fr; min-height: 100svh; }
+  .nf__media { margin-top: var(--header-h); }
+  .nf__media :global(picture), .nf__media :global(img) { height: 100%; }
+  .nf__copy { align-self: center; display: grid; gap: 1.75rem; padding-block: calc(var(--header-h) + 3rem) 4rem; }
+  .nf__title { font-size: clamp(3rem, 7vw, 7rem); max-width: 10ch; }
+  .nf__rule { width: 6rem; }
+  .nf__en { display: grid; gap: 0.6rem; color: var(--fg-soft); }
+  .nf__a { text-decoration: underline; text-underline-offset: 0.2em; }
+  @media (max-width: 899px) { .nf { grid-template-columns: 1fr; } .nf__media { aspect-ratio: 16/10; order: 2; margin-top: 0; } }
+</style>

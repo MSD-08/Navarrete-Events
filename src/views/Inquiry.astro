@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import Img from '../components/Img.astro';
+import InquiryForm from '../components/InquiryForm.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { inquiry } from '../copy/inquiry';
+import { site, whatsappLink } from '../data/site';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = inquiry[lang];
+const wa = whatsappLink();
+---
+<Base lang={lang} title={c.meta.title} description={c.meta.description} alternate={path(otherLang(lang), 'inquiry')} current="inquiry" image="boda-ta/g02">
+  <div class="iqp wrap">
+    <aside class="iqp__aside">
+      <div class="iqp__sticky">
+        <p class="label label--rule">{c.label}</p>
+        <h1 class="h1 iqp__title" set:html={c.title} />
+        <p class="iqp__lede">{c.lede}</p>
+        <div class="iqp__media media"><Img id="boda-ta/g02" alt={lang === 'es' ? 'Mesa con flores blancas, velas y tarjetas de lugar' : 'A table with white flowers, candles and place cards'} sizes="(min-width: 1000px) 30vw, 92vw" priority /></div>
+        <div class="iqp__next">
+          <p class="label">{c.asideTitle}</p>
+          <ol role="list">
+            {c.asideSteps.map((s, i) => <li><span class="num">{['I', 'II', 'III'][i]}</span> {s}</li>)}
+          </ol>
+        </div>
+        <div class="iqp__direct">
+          <p class="label">{c.directTitle}</p>
+          <ul role="list">
+            <li><a class="link" href={site.social.instagram.url} rel="noopener" target="_blank">Instagram {site.social.instagram.handle} <span class="arrow" aria-hidden="true">↗</span></a></li>
+            {site.contact.email && <li><a class="link" href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>}
+            {wa && <li><a class="link" href={wa} rel="noopener" target="_blank">WhatsApp</a></li>}
+          </ul>
+        </div>
+      </div>
+    </aside>
+    <div class="iqp__form">
+      <InquiryForm lang={lang} />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .iqp {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2.5rem, 7vw, 8rem);
+    padding-top: calc(var(--header-h) + clamp(3rem, 7vw, 6rem));
+    padding-bottom: var(--section);
+  }
+  .iqp__sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); display: grid; gap: 1.75rem; }
+  .iqp__title { font-size: clamp(2.6rem, 5vw, 5.2rem); }
+  .iqp__lede { color: var(--fg-soft); max-width: 30rem; }
+  .iqp__media { aspect-ratio: 16 / 10; }
+  .iqp__next ol, .iqp__direct ul { margin-top: 0.9rem; display: grid; gap: 0.5rem; }
+  .iqp__next li { display: flex; gap: 0.9rem; color: var(--fg-soft); }
+  .iqp__next .num { min-width: 1.6rem; }
+  .iqp__form { padding-top: 0.5rem; }
+  @media (max-width: 999px) {
+    .iqp { grid-template-columns: 1fr; }
+    .iqp__sticky { position: static; }
+    .iqp__media, .iqp__next { display: none; }
+  }
+</style>

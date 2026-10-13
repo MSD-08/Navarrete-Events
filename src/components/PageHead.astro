@@ -1,0 +1,16 @@
+---
+interface Props { label: string; title: string; lede?: string; num?: string }
+const { label, title, lede, num } = Astro.props;
+---
+<header class="ph wrap">
+  <p class="label label--rule" data-reveal>{num && <span class="num">{num}</span>} {label}</p>
+  <h1 class="display ph__title" data-reveal set:html={title} />
+  {lede && <p class="lead ph__lede" data-reveal>{lede}</p>}
+  <slot />
+</header>
+
+<style>
+  .ph { padding-top: calc(var(--header-h) + clamp(4rem, 10vw, 9rem)); padding-bottom: clamp(3.5rem, 8vw, 7rem); display: grid; gap: 2rem; }
+  .ph__title { max-width: 13ch; font-size: clamp(3rem, 8.5vw, 9rem); }
+  .ph__lede { max-width: 40rem; margin-left: auto; color: var(--fg-soft); }
+</style>

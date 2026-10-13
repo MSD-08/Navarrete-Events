@@ -1,0 +1,192 @@
+---
+import Base from '../layouts/Base.astro';
+import Img from '../components/Img.astro';
+import Gallery from '../components/Gallery.astro';
+import Lightbox from '../components/Lightbox.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+import { portfolio } from '../copy/portfolio';
+import { projects, projectLabel, type Project } from '../data/projects';
+import { countPhotos, photoAlt, srcset } from '../lib/media';
+import { site } from '../data/site';
+
+interface Props { project: Project; lang: Lang }
+const { project: p, lang } = Astro.props;
+const t = ui(lang);
+const c = portfolio[lang].project;
+const idx = projects.indexOf(p);
+const next = projects[(idx + 1) % projects.length];
+const total = countPhotos(p);
+const label = projectLabel(p, lang);
+const heroAlt = photoAlt(p, lang, 1, total);
+const title = `${p.title[lang]} — ${t.categorySingular[p.category]}${p.name ? ` ${p.name}` : ''}`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: p.title[lang],
+  about: t.categorySingular[p.category],
+  description: p.dek[lang],
+  inLanguage: lang,
+  image: `${site.url}/media/${p.hero}-${960}.jpg`,
+  creator: { '@type': 'Organization', name: 'Navarrete Events', url: site.url },
+};
+---
+<Base
+  lang={lang}
+  title={title}
+  description={p.dek[lang]}
+  alternate={path(otherLang(lang), 'portfolio', p.slug)}
+  current="portfolio"
+  image={p.hero}
+  preload={{ id: p.hero, srcset: srcset(p.hero, 'avif'), sizes: '(min-width: 900px) 50vw, 100vw' }}
+  jsonLd={jsonLd}
+>
+  <article class="prj">
+    <header class="prj-head">
+      <div class="prj-head__copy">
+        <nav class="prj-head__crumbs label" aria-label={lang === 'es' ? 'Ruta' : 'Breadcrumb'}>
+          <a href={path(lang, 'portfolio')}>{t.nav.portfolio}</a>
+          <span aria-hidden="true">/</span>
+          <a href={`${path(lang, 'portfolio')}?c=${p.category}`}>{t.categories[p.category]}</a>
+        </nav>
+        <p class="prj-head__name serif" data-reveal>{t.categorySingular[p.category]} <em>{label}</em></p>
+        <h1 class="h1 prj-head__title" data-reveal>{p.title[lang]}</h1>
+        <p class="lead prj-head__dek" data-reveal>{p.dek[lang]}</p>
+        <dl class="prj-facts" data-reveal>
+          <div><dt class="label">{c.category}</dt><dd>{t.categorySingular[p.category]}</dd></div>
+          {p.location && <div><dt class="label">{c.location}</dt><dd>{p.location[lang]}</dd></div>}
+          {p.year && <div><dt class="label">{c.year}</dt><dd>{p.year}</dd></div>}
+          <div><dt class="label">{c.photos}</dt><dd>{total}</dd></div>
+        </dl>
+      </div>
+      <div class="prj-head__media media" data-lb-group>
+        <button type="button" class="prj-head__btn" data-lb data-lb-alt={heroAlt} aria-label={`${c.openImage}: ${heroAlt}`}>
+          <Img id={p.hero} alt={heroAlt} sizes="(min-width: 900px) 50vw, 100vw" priority />
+        </button>
+      </div>
+    </header>
+
+    <section class="prj-intro wrap grid" aria-label={c.concept}>
+      <p class="label label--rule prj-intro__label" data-reveal>{c.concept}</p>
+      <p class="prj-intro__text serif" data-reveal>{p.intro[lang]}</p>
+      <div class="prj-intro__elements" data-reveal>
+        <p class="label">{c.elements}</p>
+        <ul role="list">
+          {p.elements[lang].map((e, i) => <li><span class="num">{String(i + 1).padStart(2, '0')}</span> {e}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <Gallery project={p} lang={lang} labels={{ open: c.openImage, more: c.more, gallery: c.gallery }} />
+
+    {p.reveal && (
+      <section class="prj-reveal wrap section-tight" aria-labelledby="reveal-title">
+        <div class="prj-reveal__grid">
+          <div class="prj-reveal__copy">
+            <p class="label label--rule">{c.reveal}</p>
+            <h2 id="reveal-title" class="h2 mt-s">{p.reveal.caption[lang]}</h2>
+          </div>
+          <div class="prj-reveal__media" data-reveal>
+            <BeforeAfter
+              before={p.reveal.before}
+              after={p.reveal.after}
+              ratio={p.slug === 'xv-allisson' ? '4/3' : undefined}
+              labels={{ before: c.before, after: c.after, compare: c.compare }}
+              alt={{ before: `${c.before} — ${p.altContext[lang]}`, after: `${c.after} — ${p.altContext[lang]}` }}
+            />
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section class="prj-cta is-dark grain">
+      <div class="wrap prj-cta__grid">
+        <div>
+          <h2 class="h2" set:html={c.ctaTitle} />
+          <p class="prose mt-s">{c.ctaBody}</p>
+          <div class="cta-row mt-m">
+            <a class="btn" href={path(lang, 'inquiry')}>{t.startProject}</a>
+            <a class="link" href={path(lang, 'portfolio')}>{c.back}</a>
+          </div>
+        </div>
+        <a class="prj-next" href={path(lang, 'portfolio', next.slug)}>
+          <span class="label">{c.next}</span>
+          <div class="prj-next__media media"><Img id={next.cover} alt="" sizes="(min-width: 900px) 24vw, 60vw" /></div>
+          <span class="prj-next__title serif">{next.title[lang]} <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+    </section>
+  </article>
+
+  <Lightbox labels={{ viewer: c.viewer, close: t.close, next: t.next, previous: t.previous, of: t.of }} />
+</Base>
+
+<style>
+  .prj-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 100svh;
+  }
+  .prj-head__copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    padding: calc(var(--header-h) + 3rem) clamp(1.5rem, 5vw, 6rem) clamp(2.5rem, 6vw, 5rem) var(--gutter);
+  }
+  .prj-head__crumbs { display: flex; gap: 0.75rem; margin-bottom: auto; }
+  .prj-head__crumbs a { min-height: 44px; display: inline-flex; align-items: center; }
+  .prj-head__crumbs a:hover { color: var(--fg); }
+  .prj-head__name { font-size: clamp(1.1rem, 1.5vw, 1.4rem); color: var(--fg-soft); }
+  .prj-head__name em { color: var(--fg); }
+  .prj-head__title { max-width: 12ch; }
+  .prj-head__dek { color: var(--fg-soft); max-width: 32rem; }
+  .prj-facts { display: flex; flex-wrap: wrap; gap: 1.25rem 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); margin-top: 1rem; }
+  .prj-facts dd { margin-top: 0.3rem; font-family: var(--serif); font-size: 1.1rem; }
+  .prj-head__media { position: relative; margin-top: var(--header-h); height: calc(100svh - var(--header-h)); min-height: 34rem; }
+  .prj-head__btn { display: block; width: 100%; height: 100%; cursor: zoom-in; }
+  .prj-head__btn :global(picture), .prj-head__btn :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 899px) {
+    .prj-head { grid-template-columns: 1fr; min-height: 0; }
+    .prj-head__media { order: -1; height: auto; min-height: 0; aspect-ratio: 4 / 5; margin-inline: var(--gutter); }
+    .prj-head__copy { padding-top: 2rem; }
+    .prj-head__crumbs { margin-bottom: 0; }
+  }
+
+  .prj-intro { padding-block: clamp(5rem, 11vw, 10rem); row-gap: 2rem; }
+  .prj-intro__label { grid-column: 1 / span 3; align-self: start; padding-top: 0.6rem; }
+  .prj-intro__text { grid-column: 4 / span 6; font-size: clamp(1.35rem, 2vw, 1.85rem); line-height: 1.5; letter-spacing: -0.005em; }
+  .prj-intro__elements { grid-column: 10 / span 3; }
+  .prj-intro__elements ul { margin-top: 1rem; display: grid; gap: 0.55rem; font-size: 0.95rem; color: var(--fg-soft); }
+  .prj-intro__elements .num { font-size: 0.85rem; margin-right: 0.5rem; }
+  @media (max-width: 1100px) {
+    .prj-intro__label { grid-column: 1 / -1; }
+    .prj-intro__text { grid-column: 1 / span 8; }
+    .prj-intro__elements { grid-column: 9 / -1; }
+  }
+  @media (max-width: 699px) {
+    .prj-intro__text, .prj-intro__elements { grid-column: 1 / -1; }
+  }
+
+  .prj-reveal { margin-top: var(--section); }
+  .prj-reveal__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: clamp(2rem, 5vw, 6rem); align-items: center; }
+  .prj-reveal__copy .h2 { font-size: clamp(1.8rem, 3vw, 3rem); max-width: 16ch; }
+  @media (max-width: 899px) { .prj-reveal__grid { grid-template-columns: 1fr; } }
+  .prj-reveal__media { max-width: 44rem; width: 100%; justify-self: end; }
+
+  .prj-cta { margin-top: var(--section); padding-block: clamp(5rem, 10vw, 9rem); }
+  .prj-cta__grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem; align-items: end; }
+  .prj-cta .h2 { max-width: 16ch; }
+  .prj-next { display: grid; gap: 1rem; justify-self: end; width: min(100%, 22rem); }
+  .prj-next__media { aspect-ratio: 4 / 5; }
+  .prj-next__media :global(img) { transition: transform 1.8s var(--ease-out); }
+  .prj-next:hover .prj-next__media :global(img) { transform: scale(1.04); }
+  .prj-next__title { font-size: 1.5rem; line-height: 1.2; }
+  .prj-next:hover .prj-next__title { font-style: italic; }
+  @media (max-width: 899px) {
+    .prj-cta__grid { grid-template-columns: 1fr; }
+    .prj-next { justify-self: start; }
+  }
+</style>

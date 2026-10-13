@@ -1,0 +1,38 @@
+export const contact = {
+  es: {
+    meta: {
+      title: 'Contacto',
+      description: 'Contacto de Navarrete Events, estudio de planeación y diseño de celebraciones en Tijuana, Baja California.',
+    },
+    label: 'Contacto',
+    title: 'Conversemos',
+    lede: 'Para hablar de una celebración, la mejor forma de empezar es contarnos un poco sobre ella. También pueden escribirnos por cualquiera de estos medios.',
+    inquiryLabel: 'Nuevos proyectos',
+    inquiryText: 'Cuéntennos sobre su boda, XV años o celebración privada.',
+    inquiryCta: 'Iniciar proyecto',
+    instagramLabel: 'Instagram',
+    instagramText: 'Proyectos recientes y mensajes directos.',
+    emailLabel: 'Correo',
+    whatsappLabel: 'WhatsApp',
+    studioLabel: 'Estudio',
+    studioText: 'Tijuana, Baja California, México',
+  },
+  en: {
+    meta: {
+      title: 'Contact',
+      description: 'Contact Navarrete Events, a celebration planning and design studio in Tijuana, Baja California.',
+    },
+    label: 'Contact',
+    title: 'Let’s talk',
+    lede: 'To talk about a celebration, the best way to begin is to tell us a little about it. You are also welcome to reach us through any of these channels.',
+    inquiryLabel: 'New projects',
+    inquiryText: 'Tell us about your wedding, quinceañera or private celebration.',
+    inquiryCta: 'Start a project',
+    instagramLabel: 'Instagram',
+    instagramText: 'Recent projects and direct messages.',
+    emailLabel: 'Email',
+    whatsappLabel: 'WhatsApp',
+    studioLabel: 'Studio',
+    studioText: 'Tijuana, Baja California, Mexico',
+  },
+} as const;

@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+import { legal } from '../copy/legal';
+
+interface Props { lang: Lang; page: 'privacy' | 'accessibility' }
+const { lang, page } = Astro.props;
+const t = ui(lang);
+const c = legal[lang][page];
+---
+<Base lang={lang} title={c.meta.title} description={c.meta.description} alternate={path(otherLang(lang), page)} current={page}>
+  <article class="legal wrap">
+    <p class="label label--rule">{t.nav[page]}</p>
+    <h1 class="display legal__title" set:html={c.title} />
+    {'updated' in c && <p class="fig">{c.updated}</p>}
+    <div class="legal__body">
+      {c.sections.map((s) => (
+        <section id={'id' in s ? s.id : undefined}>
+          <h2 class="h3">{s.h}</h2>
+          {s.p.map((p) => <p>{p}</p>)}
+        </section>
+      ))}
+    </div>
+  </article>
+</Base>
+
+<style>
+  .legal { padding-top: calc(var(--header-h) + clamp(4rem, 9vw, 8rem)); padding-bottom: var(--section); display: grid; gap: 1.75rem; }
+  .legal__title { font-size: clamp(3rem, 7vw, 7rem); }
+  .legal__body { margin-top: 2rem; max-width: 44rem; display: grid; gap: 2.75rem; }
+  .legal__body section { display: grid; gap: 0.9rem; scroll-margin-top: calc(var(--header-h) + 2rem); }
+  .legal__body p { color: var(--fg-soft); }
+</style>

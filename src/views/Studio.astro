@@ -1,0 +1,118 @@
+---
+import Base from '../layouts/Base.astro';
+import Img from '../components/Img.astro';
+import PageHead from '../components/PageHead.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { studio } from '../copy/studio';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = studio[lang];
+---
+<Base lang={lang} title={c.meta.title} description={c.meta.description} alternate={path(otherLang(lang), 'studio')} current="studio" image="_studio/gaby-navarrete">
+  <PageHead label={c.label} title={c.title} lede={c.lede} />
+
+  <section class="st-phil wrap" aria-labelledby="phil-title">
+    <div class="st-phil__grid">
+      <figure class="st-lead" data-reveal="image">
+        <div class="media" style="aspect-ratio: 4/5"><Img id="_studio/gaby-navarrete" alt={lang === 'es' ? 'Gaby Navarrete revisando una mesa con flores blancas y cristalería' : 'Gaby Navarrete reviewing a table set with white flowers and crystal'} sizes="(min-width: 900px) 36vw, 92vw" /></div>
+        <figcaption>
+          <span class="serif st-lead__name">{c.leadCaption}</span>
+          <span class="label">{c.leadRole}</span>
+          <span class="fig st-lead__note">{c.leadNote}</span>
+        </figcaption>
+      </figure>
+      <div class="st-phil__copy">
+        <p class="label label--rule" data-reveal>{c.philosophyLabel}</p>
+        <h2 id="phil-title" class="h2 st-phil__quote" data-reveal set:html={c.philosophy} />
+        <div class="prose stack" data-reveal>{c.philosophyBody.map((p) => <p>{p}</p>)}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="st-pr section" aria-labelledby="pr-title">
+    <div class="wrap">
+      <h2 id="pr-title" class="label label--rule" data-reveal>{c.principlesLabel}</h2>
+      <ol class="st-pr__list" role="list">
+        {c.principles.map((p, i) => (
+          <li class="st-pr__item" data-reveal style={`--delay:${i * 0.06}s`}>
+            <span class="num">{['I', 'II', 'III', 'IV', 'V'][i]}</span>
+            <h3 class="h3">{p.title}</h3>
+            <p>{p.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="st-team is-dark grain" aria-labelledby="team-title">
+    <div class="st-team__media media">
+      <Img id="_studio/navarrete-team" alt={c.teamAlt} sizes="100vw" position="50% 40%" />
+    </div>
+    <div class="wrap st-team__copy">
+      <p class="label label--rule" data-reveal>{c.teamLabel}</p>
+      <h2 id="team-title" class="h1" data-reveal set:html={c.teamTitle} />
+      <p class="prose" data-reveal>{c.teamText}</p>
+    </div>
+  </section>
+
+  <section class="st-place section wrap" aria-labelledby="place-title">
+    <div class="st-place__grid">
+      <div class="st-place__copy">
+        <p class="label label--rule" data-reveal>{c.placeLabel}</p>
+        <h2 id="place-title" class="h2 mt-s" data-reveal set:html={c.placeTitle} />
+        <p class="prose mt-s" data-reveal>{c.placeText}</p>
+      </div>
+      <figure class="st-place__a" data-reveal="image">
+        <div class="media" style="aspect-ratio: 4/5"><Img id="boda-sf/g12" alt={lang === 'es' ? 'Pérgola con arcos negros y piso geométrico al atardecer' : 'A pergola with black arches and a geometric floor at sunset'} sizes="(min-width: 900px) 30vw, 70vw" /></div>
+      </figure>
+      <figure class="st-place__b" data-reveal="image" style="--delay:.15s">
+        <div class="media" style="aspect-ratio: 1"><Img id="graduacion-pflc-2024/g01" alt={lang === 'es' ? 'Vista aérea de Tijuana con un evento montado en un patio escolar' : 'An aerial view of Tijuana with an event set in a school courtyard'} sizes="(min-width: 900px) 24vw, 60vw" /></div>
+        <figcaption class="fig">Tijuana, B.C.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <CtaBand lang={lang} title={c.ctaTitle} text={c.ctaText} />
+</Base>
+
+<style>
+  .st-phil__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, 2.2vw, 2.5rem); row-gap: 3rem; align-items: center; }
+  .st-lead { grid-column: 1 / span 5; }
+  .st-lead figcaption { display: grid; gap: 0.3rem; margin-top: 1rem; }
+  .st-lead__name { font-size: 1.4rem; font-style: italic; }
+  .st-lead__note { margin-top: 0.4rem; font-size: 0.85rem; }
+  .st-phil__copy { grid-column: 7 / span 6; display: grid; gap: 2rem; }
+  .st-phil__quote { font-size: clamp(1.9rem, 3.4vw, 3.4rem); line-height: 1.12; }
+  @media (max-width: 899px) {
+    .st-lead { grid-column: 1 / span 10; }
+    .st-phil__copy { grid-column: 1 / -1; }
+  }
+
+  .st-pr__list { margin-top: clamp(3rem, 6vw, 5rem); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2rem; }
+  .st-pr__item { display: grid; align-content: start; gap: 0.9rem; border-top: 1px solid var(--line); padding-top: 1.5rem; }
+  .st-pr__item .num { font-size: 1.2rem; }
+  .st-pr__item p { color: var(--fg-soft); }
+  @media (max-width: 1100px) { .st-pr__list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 699px) { .st-pr__list { grid-template-columns: 1fr; } }
+
+  .st-team { position: relative; display: grid; min-height: min(92svh, 56rem); }
+  .st-team__media { position: absolute; inset: 0; }
+  .st-team__media :global(picture), .st-team__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .st-team::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(42 31 25 / 0.92) 0%, rgb(42 31 25 / 0.45) 45%, rgb(42 31 25 / 0.05) 80%); z-index: 1; }
+  .st-team__copy { position: relative; z-index: 3; align-self: end; display: grid; gap: 1.5rem; padding-block: 10rem clamp(3rem, 6vw, 5rem); }
+  .st-team__copy .h1 { max-width: 14ch; }
+
+  .st-place__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, 2.2vw, 2.5rem); row-gap: 2.5rem; align-items: start; }
+  .st-place__copy { grid-column: 1 / span 5; align-self: center; }
+  .st-place__copy .h2 { max-width: 14ch; }
+  .st-place__a { grid-column: 7 / span 3; }
+  .st-place__b { grid-column: 10 / span 3; margin-top: 30%; }
+  .st-place__b figcaption { margin-top: 0.7rem; }
+  @media (max-width: 899px) {
+    .st-place__copy { grid-column: 1 / -1; }
+    .st-place__a { grid-column: 1 / span 7; }
+    .st-place__b { grid-column: 8 / -1; }
+  }
+</style>

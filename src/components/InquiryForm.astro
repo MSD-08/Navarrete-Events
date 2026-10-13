@@ -1,0 +1,538 @@
+---
+import { inquiry } from '../copy/inquiry';
+import { site, mailLink, whatsappLink } from '../data/site';
+import { path, type Lang } from '../i18n/routes';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = inquiry[lang];
+const f = c.fields;
+const today = new Date().toISOString().slice(0, 10);
+const opts = <T extends Record<string, string>>(o: T) => Object.entries(o) as [string, string][];
+const igDm = `https://ig.me/m/${site.social.instagram.handle.replace('@', '')}`;
+const mail = mailLink(c.summaryTitle);
+const wa = whatsappLink();
+---
+<div class="iq" data-inquiry data-endpoint={site.inquiry.endpoint} data-lang={lang}>
+  <form class="iq__form" novalidate data-form>
+    <div class="iq__summary" role="alert" tabindex="-1" hidden data-error-summary>
+      <p class="iq__summary-title">{c.errors.summary}</p>
+      <ul role="list" data-error-list></ul>
+    </div>
+
+    <!-- Honeypot (hidden from people and assistive technology) -->
+    <div class="iq__hp" aria-hidden="true">
+      <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+    </div>
+
+    <fieldset class="iq__section">
+      <legend class="iq__legend"><span class="num">01</span> <span class="serif">{c.sections[0]}</span></legend>
+
+      <div class="fld" data-field="name">
+        <label for="iq-name">{f.name.label} <span class="fld__req">· {c.required}</span></label>
+        <input id="iq-name" name="name" type="text" autocomplete="name" required aria-describedby="iq-name-err" />
+        <p class="fld__err" id="iq-name-err" data-err></p>
+      </div>
+
+      <div class="fld-row">
+        <div class="fld" data-field="email">
+          <label for="iq-email">{f.email.label} <span class="fld__req">· {c.required}</span></label>
+          <input id="iq-email" name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby="iq-email-hint iq-email-err" />
+          <p class="fld__hint" id="iq-email-hint">{f.email.hint}</p>
+          <p class="fld__err" id="iq-email-err" data-err></p>
+        </div>
+        <div class="fld" data-field="phone">
+          <label for="iq-phone">{f.phone.label} <span class="fld__opt">· {c.optional}</span></label>
+          <input id="iq-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" pattern="[0-9+()\-\s]{7,}" aria-describedby="iq-phone-hint iq-phone-err" />
+          <p class="fld__hint" id="iq-phone-hint">{f.phone.hint}</p>
+          <p class="fld__err" id="iq-phone-err" data-err></p>
+        </div>
+      </div>
+
+      <fieldset class="fld fld--choices" data-field="language">
+        <legend>{f.language.label}</legend>
+        <div class="chips">
+          {opts(f.language.options).map(([v, l]) => (
+            <label class="chip"><input type="radio" name="language" value={v} checked={v === lang} /><span>{l}</span></label>
+          ))}
+        </div>
+      </fieldset>
+    </fieldset>
+
+    <fieldset class="iq__section">
+      <legend class="iq__legend"><span class="num">02</span> <span class="serif">{c.sections[1]}</span></legend>
+
+      <fieldset class="fld fld--choices" data-field="eventType" aria-describedby="iq-type-err">
+        <legend>{f.eventType.label} <span class="fld__req">· {c.required}</span></legend>
+        <div class="chips">
+          {opts(f.eventType.options).map(([v, l]) => (
+            <label class="chip"><input type="radio" name="eventType" value={v} required /><span>{l}</span></label>
+          ))}
+        </div>
+        <p class="fld__err" id="iq-type-err" data-err></p>
+      </fieldset>
+      <div class="fld fld--cond" data-field="eventTypeOther" data-show-when="eventType=other" hidden>
+        <label for="iq-type-other">{f.eventTypeOther.label}</label>
+        <input id="iq-type-other" name="eventTypeOther" type="text" />
+      </div>
+
+      <fieldset class="fld fld--choices" data-field="dateStatus">
+        <legend>{f.dateStatus.label}</legend>
+        <div class="chips">
+          {opts(f.dateStatus.options).map(([v, l]) => (
+            <label class="chip"><input type="radio" name="dateStatus" value={v} /><span>{l}</span></label>
+          ))}
+        </div>
+      </fieldset>
+      <div class="fld fld--cond" data-field="date" data-show-when="dateStatus=set" hidden>
+        <label for="iq-date">{f.date.label}</label>
+        <input id="iq-date" name="date" type="date" min={today} aria-describedby="iq-date-err" />
+        <p class="fld__err" id="iq-date-err" data-err></p>
+      </div>
+      <div class="fld fld--cond" data-field="approxDate" data-show-when="dateStatus=approx" hidden>
+        <label for="iq-approx">{f.approxDate.label}</label>
+        <input id="iq-approx" name="approxDate" type="text" placeholder={f.approxDate.placeholder} />
+      </div>
+
+      <fieldset class="fld fld--choices" data-field="location">
+        <legend>{f.location.label}</legend>
+        <div class="chips">
+          {opts(f.location.options).map(([v, l]) => (
+            <label class="chip"><input type="radio" name="location" value={v} /><span>{l}</span></label>
+          ))}
+        </div>
+      </fieldset>
+      <div class="fld fld--cond" data-field="locationOther" data-show-when="location=other|baja" hidden>
+        <label for="iq-loc-other">{f.locationOther.label}</label>
+        <input id="iq-loc-other" name="locationOther" type="text" autocomplete="address-level2" />
+      </div>
+
+      <div class="fld-row">
+        <div class="fld" data-field="venue">
+          <label for="iq-venue">{f.venue.label} <span class="fld__opt">· {c.optional}</span></label>
+          <input id="iq-venue" name="venue" type="text" aria-describedby="iq-venue-hint" />
+          <p class="fld__hint" id="iq-venue-hint">{f.venue.hint}</p>
+        </div>
+        <div class="fld" data-field="guests">
+          <label for="iq-guests">{f.guests.label}</label>
+          <div class="select">
+            <select id="iq-guests" name="guests">
+              <option value="">{c.select}</option>
+              {opts(f.guests.options).map(([v, l]) => <option value={v}>{l}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="fld" data-field="budget">
+        <label for="iq-budget">{f.budget.label} <span class="fld__opt">· {c.optional}</span></label>
+        <div class="select">
+          <select id="iq-budget" name="budget" aria-describedby="iq-budget-hint">
+            <option value="">{c.select}</option>
+            {opts(f.budget.options).map(([v, l]) => <option value={v}>{l}</option>)}
+          </select>
+        </div>
+        <p class="fld__hint" id="iq-budget-hint">{f.budget.hint}</p>
+      </div>
+
+      <fieldset class="fld fld--choices" data-field="services" aria-describedby="iq-svc-hint">
+        <legend>{f.services.label}</legend>
+        <p class="fld__hint" id="iq-svc-hint">{f.services.hint}</p>
+        <div class="chips">
+          {opts(f.services.options).map(([v, l]) => (
+            <label class="chip chip--check"><input type="checkbox" name="services" value={v} /><span>{l}</span></label>
+          ))}
+        </div>
+      </fieldset>
+    </fieldset>
+
+    <fieldset class="iq__section">
+      <legend class="iq__legend"><span class="num">03</span> <span class="serif">{c.sections[2]}</span></legend>
+
+      <div class="fld" data-field="vision">
+        <label for="iq-vision">{f.vision.label} <span class="fld__req">· {c.required}</span></label>
+        <p class="fld__hint" id="iq-vision-hint">{f.vision.hint}</p>
+        <textarea id="iq-vision" name="vision" rows="6" required minlength="10" aria-describedby="iq-vision-hint iq-vision-err"></textarea>
+        <p class="fld__err" id="iq-vision-err" data-err></p>
+      </div>
+
+      <div class="fld" data-field="source">
+        <label for="iq-source">{f.source.label} <span class="fld__opt">· {c.optional}</span></label>
+        <div class="select">
+          <select id="iq-source" name="source">
+            <option value="">{f.source.placeholder}</option>
+            {opts(f.source.options).map(([v, l]) => <option value={v}>{l}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div class="fld fld--consent" data-field="consent">
+        <label class="check">
+          <input type="checkbox" name="consent" value="yes" required aria-describedby="iq-consent-err" />
+          <span set:html={f.consent.label} />
+        </label>
+        <p class="fld__err" id="iq-consent-err" data-err></p>
+      </div>
+    </fieldset>
+
+    <div class="iq__submit">
+      <button type="submit" class="btn" data-submit data-label={c.submit} data-sending={c.sending}>{c.submit}</button>
+      <p class="fld__hint">{c.privacyNote}</p>
+    </div>
+  </form>
+
+  <!-- Success: shown only after the endpoint confirms receipt -->
+  <section class="iq__state" hidden data-state="success" tabindex="-1" aria-labelledby="iq-success-title">
+    <h2 id="iq-success-title" class="h2" set:html={c.success.title} />
+    <p class="prose mt-s">{c.success.body}</p>
+    <div class="cta-row mt-m">
+      <a class="btn" href={path(lang, 'home')}>{c.success.again}</a>
+      <a class="link" href={site.social.instagram.url} rel="noopener" target="_blank">Instagram {site.social.instagram.handle}</a>
+    </div>
+  </section>
+
+  <!-- Manual delivery (no endpoint configured) or failure fallback -->
+  <section class="iq__state" hidden data-state="manual" tabindex="-1" aria-labelledby="iq-manual-title">
+    <h2 id="iq-manual-title" class="h2" data-manual-title data-title-manual={c.manual.title} data-title-failure={c.failure.title} set:html={c.manual.title} />
+    <p class="prose mt-s" data-manual-body data-body-manual={c.manual.body} data-body-failure={c.failure.body}>{c.manual.body}</p>
+    <label class="label mt-m iq__msg-label" for="iq-message">{c.manual.messageLabel}</label>
+    <textarea id="iq-message" class="iq__message" rows="12" readonly data-message></textarea>
+    <div class="cta-row mt-m">
+      <button type="button" class="btn" data-copy data-label={c.manual.copy} data-done={c.manual.copied}>{c.manual.copy}</button>
+      <a class="btn btn--ghost" href={igDm} rel="noopener" target="_blank" data-ig>{c.manual.instagram} <span aria-hidden="true">↗</span></a>
+      {mail && <a class="btn btn--ghost" href={mail} data-mail>{c.manual.email}</a>}
+      {wa && <a class="btn btn--ghost" href={wa} rel="noopener" target="_blank" data-wa>{c.manual.whatsapp}</a>}
+    </div>
+    <div class="cta-row mt-s">
+      <button type="button" class="link" data-retry hidden>{c.failure.retry}</button>
+      <button type="button" class="link" data-edit>{c.manual.edit}</button>
+    </div>
+    <p class="visually-hidden" aria-live="polite" data-copy-status></p>
+  </section>
+</div>
+
+<script define:vars={{ errors: c.errors, labels: f, summaryTitle: c.summaryTitle, sections: c.sections }}>
+  // Inline script: copy/labels are injected per language.
+  window.__inquiryCopy = { errors, labels, summaryTitle, sections };
+</script>
+
+<script>
+  type Copy = {
+    errors: Record<string, string>;
+    labels: Record<string, { label: string; options?: Record<string, string> }>;
+    summaryTitle: string;
+    sections: string[];
+  };
+  const root = document.querySelector<HTMLElement>('[data-inquiry]');
+  if (root) {
+    const copy = (window as unknown as { __inquiryCopy: Copy }).__inquiryCopy;
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const summary = root.querySelector<HTMLElement>('[data-error-summary]')!;
+    const errList = root.querySelector<HTMLElement>('[data-error-list]')!;
+    const submit = root.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const success = root.querySelector<HTMLElement>('[data-state="success"]')!;
+    const manual = root.querySelector<HTMLElement>('[data-state="manual"]')!;
+    const message = root.querySelector<HTMLTextAreaElement>('[data-message]')!;
+    const endpoint = root.dataset.endpoint?.trim();
+    const STORE = 'ne-inquiry-draft';
+
+    const strip = (html: string) => html.replace(/<[^>]+>/g, '');
+
+    // Conditional questions
+    const conds = [...form.querySelectorAll<HTMLElement>('[data-show-when]')];
+    const updateConds = () => {
+      for (const el of conds) {
+        const [name, values] = el.dataset.showWhen!.split('=');
+        const v = (form.elements.namedItem(name) as RadioNodeList | null)?.value ?? '';
+        const show = values.split('|').includes(v);
+        el.hidden = !show;
+        el.querySelectorAll<HTMLInputElement>('input, select, textarea').forEach((i) => (i.disabled = !show));
+      }
+    };
+
+    // Draft persistence (per tab session, never includes consent)
+    const save = () => {
+      try {
+        const data: Record<string, string | string[]> = {};
+        new FormData(form).forEach((v, k) => {
+          if (k === 'consent' || k === 'website') return;
+          const prev = data[k];
+          data[k] = prev === undefined ? String(v) : ([] as string[]).concat(prev, String(v));
+        });
+        sessionStorage.setItem(STORE, JSON.stringify(data));
+      } catch {}
+    };
+    const restore = () => {
+      try {
+        const data = JSON.parse(sessionStorage.getItem(STORE) || 'null') as Record<string, string | string[]> | null;
+        if (!data) return;
+        for (const [k, v] of Object.entries(data)) {
+          const vals = ([] as string[]).concat(v);
+          form.querySelectorAll<HTMLInputElement>(`[name="${k}"]`).forEach((el) => {
+            if (el.type === 'radio' || el.type === 'checkbox') el.checked = vals.includes(el.value);
+            else el.value = vals[0] ?? '';
+          });
+        }
+      } catch {}
+    };
+    restore();
+    updateConds();
+    form.addEventListener('change', () => { updateConds(); save(); });
+    form.addEventListener('input', save);
+
+    // Validation
+    const fieldOf = (name: string) => form.querySelector<HTMLElement>(`[data-field="${name}"]`);
+    const setError = (name: string, msg: string) => {
+      const field = fieldOf(name);
+      if (!field) return;
+      const err = field.querySelector<HTMLElement>('[data-err]');
+      if (err) err.textContent = msg;
+      field.classList.toggle('has-error', !!msg);
+      field.querySelectorAll<HTMLElement>('input:not([type=radio]):not([type=checkbox]), textarea, select').forEach((i) => i.setAttribute('aria-invalid', msg ? 'true' : 'false'));
+      if (field.matches('fieldset')) field.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    };
+    const validate = () => {
+      const problems: { name: string; msg: string; target: string }[] = [];
+      const val = (n: string) => ((form.elements.namedItem(n) as HTMLInputElement | RadioNodeList | null)?.value ?? '').trim();
+      const name = val('name');
+      if (!name) problems.push({ name: 'name', msg: copy.errors.required, target: 'iq-name' });
+      const email = val('email');
+      if (!email) problems.push({ name: 'email', msg: copy.errors.required, target: 'iq-email' });
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) problems.push({ name: 'email', msg: copy.errors.email, target: 'iq-email' });
+      const phone = val('phone');
+      if (phone && !/^[0-9+()\-\s]{7,}$/.test(phone)) problems.push({ name: 'phone', msg: copy.errors.phone, target: 'iq-phone' });
+      if (!val('eventType')) problems.push({ name: 'eventType', msg: copy.errors.choose, target: 'eventType' });
+      const dateInput = form.querySelector<HTMLInputElement>('#iq-date')!;
+      if (!dateInput.disabled && dateInput.value && dateInput.value < dateInput.min) problems.push({ name: 'date', msg: copy.errors.date, target: 'iq-date' });
+      if (val('vision').length < 10) problems.push({ name: 'vision', msg: copy.errors.vision, target: 'iq-vision' });
+      const consent = form.querySelector<HTMLInputElement>('[name="consent"]')!;
+      if (!consent.checked) problems.push({ name: 'consent', msg: copy.errors.consent, target: 'consent' });
+
+      ['name', 'email', 'phone', 'eventType', 'date', 'vision', 'consent'].forEach((n) => setError(n, problems.find((p) => p.name === n)?.msg ?? ''));
+      return problems;
+    };
+    // Re-validate a field once the visitor corrects it
+    form.addEventListener('change', (e) => {
+      const field = (e.target as HTMLElement).closest<HTMLElement>('[data-field].has-error');
+      if (field) validate();
+    });
+
+    const showSummary = (problems: { name: string; msg: string; target: string }[]) => {
+      errList.innerHTML = '';
+      for (const p of problems) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        const labelEl = fieldOf(p.name)?.querySelector('label, legend');
+        a.href = `#${p.target}`;
+        a.textContent = `${(labelEl?.textContent ?? p.name).split('·')[0].trim()} — ${p.msg}`;
+        a.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          const target = document.getElementById(p.target) ?? fieldOf(p.name)?.querySelector<HTMLElement>('input, textarea, select');
+          target?.focus();
+          target?.scrollIntoView({ block: 'center' });
+        });
+        li.appendChild(a);
+        errList.appendChild(li);
+      }
+      summary.hidden = false;
+      summary.focus();
+    };
+
+    // Plain-text summary (used for manual delivery and as `message` for the endpoint)
+    const buildSummary = () => {
+      const fd = new FormData(form);
+      const L = copy.labels;
+      const opt = (k: string, v: string) => L[k]?.options?.[v] ?? v;
+      const line = (k: string, v: string) => (v ? `${strip(L[k].label)}: ${v}` : '');
+      const services = fd.getAll('services').map((s) => opt('services', String(s))).join(', ');
+      const g = (k: string) => String(fd.get(k) ?? '').trim();
+      const lines = [
+        copy.summaryTitle,
+        '',
+        `— ${copy.sections[0]}`,
+        line('name', g('name')),
+        line('email', g('email')),
+        line('phone', g('phone')),
+        line('language', opt('language', g('language'))),
+        '',
+        `— ${copy.sections[1]}`,
+        line('eventType', g('eventType') === 'other' && g('eventTypeOther') ? `${opt('eventType', 'other')} (${g('eventTypeOther')})` : opt('eventType', g('eventType'))),
+        line('dateStatus', g('dateStatus') ? opt('dateStatus', g('dateStatus')) + (g('date') ? ` — ${g('date')}` : g('approxDate') ? ` — ${g('approxDate')}` : '') : ''),
+        line('location', g('location') ? opt('location', g('location')) + (g('locationOther') ? ` — ${g('locationOther')}` : '') : ''),
+        line('venue', g('venue')),
+        line('guests', g('guests') ? opt('guests', g('guests')) : ''),
+        line('budget', g('budget') ? opt('budget', g('budget')) : ''),
+        line('services', services),
+        '',
+        `— ${copy.sections[2]}`,
+        g('vision'),
+        '',
+        line('source', g('source') ? opt('source', g('source')) : ''),
+      ];
+      return lines.filter((l, i, arr) => l !== '' || (arr[i - 1] !== '' && i > 0)).join('\n').trim();
+    };
+
+    const show = (state: 'form' | 'success' | 'manual' | 'failure') => {
+      form.hidden = state !== 'form';
+      success.hidden = state !== 'success';
+      manual.hidden = !(state === 'manual' || state === 'failure');
+      if (state === 'manual' || state === 'failure') {
+        const key = state === 'manual' ? 'Manual' : 'Failure';
+        const title = manual.querySelector<HTMLElement>('[data-manual-title]')!;
+        const body = manual.querySelector<HTMLElement>('[data-manual-body]')!;
+        title.innerHTML = title.dataset[`title${key}`]!;
+        body.textContent = body.dataset[`body${key}`]!;
+        manual.querySelector<HTMLElement>('[data-retry]')!.hidden = state !== 'failure';
+        const text = buildSummary();
+        message.value = text;
+        const wa = manual.querySelector<HTMLAnchorElement>('[data-wa]');
+        if (wa) wa.href = `${wa.href.split('?')[0]}?text=${encodeURIComponent(text)}`;
+        const mail = manual.querySelector<HTMLAnchorElement>('[data-mail]');
+        if (mail) mail.href = `${mail.href.split('&body=')[0]}&body=${encodeURIComponent(text)}`;
+      }
+      const target = state === 'form' ? form : state === 'success' ? success : manual;
+      target.scrollIntoView({ block: 'start' });
+      if (state !== 'form') target.focus();
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const problems = validate();
+      if (problems.length) { showSummary(problems); return; }
+      summary.hidden = true;
+      // Silently drop bot submissions
+      if ((form.elements.namedItem('website') as HTMLInputElement).value) return;
+
+      if (!endpoint) { show('manual'); return; }
+
+      submit.disabled = true;
+      submit.textContent = submit.dataset.sending!;
+      try {
+        const fd = new FormData(form);
+        const payload: Record<string, unknown> = { _subject: copy.summaryTitle, message: buildSummary(), pageLanguage: root.dataset.lang };
+        fd.forEach((v, k) => {
+          if (k === 'website') return;
+          payload[k] = k === 'services' ? fd.getAll('services') : v;
+        });
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error(String(res.status));
+        try { sessionStorage.removeItem(STORE); } catch {}
+        show('success');
+      } catch {
+        show('failure');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = submit.dataset.label!;
+      }
+    });
+
+    manual.querySelector('[data-copy]')!.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      const status = manual.querySelector<HTMLElement>('[data-copy-status]')!;
+      try {
+        await navigator.clipboard.writeText(message.value);
+      } catch {
+        message.select();
+        document.execCommand?.('copy');
+      }
+      btn.textContent = btn.dataset.done!;
+      status.textContent = btn.dataset.done!;
+      setTimeout(() => (btn.textContent = btn.dataset.label!), 2600);
+    });
+    manual.querySelector('[data-edit]')!.addEventListener('click', () => show('form'));
+    manual.querySelector('[data-retry]')!.addEventListener('click', () => form.requestSubmit());
+  }
+</script>
+
+<style>
+  .iq__form { display: grid; gap: clamp(3rem, 6vw, 4.5rem); }
+  .iq__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .iq__section { display: grid; gap: 2rem; }
+  .iq__legend { display: flex; align-items: baseline; gap: 1rem; width: 100%; padding-bottom: 1.1rem; margin-bottom: 0.5rem; border-bottom: 1px solid var(--line); }
+  .iq__legend .num { font-size: 1rem; }
+  .iq__legend .serif { font-size: clamp(1.6rem, 2.6vw, 2.3rem); letter-spacing: -0.015em; }
+
+  .fld { display: grid; gap: 0.55rem; }
+  .fld[hidden] { display: none; }
+  .fld-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media (max-width: 699px) { .fld-row { grid-template-columns: 1fr; } }
+  .fld label:not(.chip):not(.check), .fld legend {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg);
+    padding: 0;
+  }
+  .fld legend { margin-bottom: 0.9rem; }
+  .fld__req, .fld__opt { color: var(--fg-soft); font-weight: 400; letter-spacing: 0.08em; }
+  .fld__hint { font-size: 0.85rem; color: var(--fg-soft); }
+  .fld__err { font-size: 0.875rem; color: #8f2f1f; min-height: 0; }
+  .fld__err:empty { display: none; }
+  .fld--cond { padding-left: 1.25rem; border-left: 1px solid var(--accent); }
+  @media (prefers-reduced-motion: no-preference) {
+    .fld--cond:not([hidden]) { animation: cond-in 0.6s var(--ease-out); }
+  }
+  @keyframes cond-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  input[type='text'], input[type='email'], input[type='tel'], input[type='date'], select, textarea {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.7rem 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--fg) 35%, transparent);
+    border-radius: 0;
+    font-size: 1.05rem;
+    font-family: var(--sans);
+    color: var(--fg);
+    transition: border-color 0.4s var(--ease);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  textarea { min-height: 9rem; resize: vertical; line-height: 1.6; padding: 0.9rem 1rem; border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; border-color: var(--fg); box-shadow: 0 1px 0 0 var(--fg); }
+  textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--fg); }
+  input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--fg) 40%, transparent); }
+  .has-error input, .has-error textarea, .has-error select { border-color: #8f2f1f; }
+  .select { position: relative; }
+  .select::after { content: ''; position: absolute; right: 0.25rem; top: 50%; width: 7px; height: 7px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: translateY(-75%) rotate(45deg); pointer-events: none; }
+  select { padding-right: 2rem; cursor: pointer; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .chip { position: relative; cursor: pointer; }
+  .chip input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .chip span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.9rem;
+    padding: 0.6rem 1.15rem;
+    border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+    font-size: 0.95rem;
+    transition: background-color 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s var(--ease);
+  }
+  .chip:hover span { border-color: var(--fg); }
+  .chip input:checked + span { background: var(--ink); color: var(--ivory); border-color: var(--ink); }
+  .chip--check input:checked + span::before { content: '✓'; margin-right: 0.55rem; font-size: 0.8rem; }
+  .chip input:focus-visible + span { outline: 1.5px solid var(--fg); outline-offset: 3px; }
+  .has-error .chip span { border-color: color-mix(in srgb, #8f2f1f 60%, transparent); }
+
+  .check { display: grid; grid-template-columns: auto 1fr; gap: 0.9rem; align-items: start; font-size: 0.95rem; line-height: 1.6; cursor: pointer; }
+  .check input { width: 1.35rem; height: 1.35rem; margin-top: 0.15rem; accent-color: var(--ink); cursor: pointer; }
+  .check :global(a) { text-decoration: underline; text-underline-offset: 0.2em; }
+
+  .iq__summary { padding: 1.25rem 1.5rem; border: 1px solid #8f2f1f; background: rgb(143 47 31 / 0.05); }
+  .iq__summary-title { font-weight: 500; }
+  .iq__summary ul { margin-top: 0.6rem; display: grid; gap: 0.3rem; }
+  .iq__summary a { text-decoration: underline; text-underline-offset: 0.2em; color: #8f2f1f; }
+
+  .iq__submit { display: grid; gap: 1rem; justify-items: start; }
+  .iq__submit .btn { min-width: min(100%, 18rem); }
+  @media (max-width: 480px) { .iq__submit .btn { width: 100%; } }
+
+  .iq__state { padding-block: 1rem; }
+  .iq__state .h2 { max-width: 16ch; }
+  .iq__msg-label { display: block; }
+  .iq__message { margin-top: 0.75rem; font-size: 0.92rem; background: var(--cream); white-space: pre-wrap; }
+</style>

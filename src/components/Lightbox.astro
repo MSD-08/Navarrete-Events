@@ -1,0 +1,132 @@
+---
+/** Full-screen photo viewer. Any element with [data-lb] inside [data-lb-group] opens it. */
+interface Props { labels: { viewer: string; close: string; next: string; previous: string; of: string } }
+const { labels } = Astro.props;
+---
+<dialog class="lb is-charcoal" data-lightbox aria-label={labels.viewer} data-of={labels.of}>
+  <div class="lb__inner">
+    <figure class="lb__figure">
+      <picture class="lb__pic">
+        <source type="image/avif" data-lb-source />
+        <img alt="" data-lb-img decoding="async" />
+      </picture>
+      <figcaption class="lb__caption">
+        <span class="lb__alt" data-lb-alt></span>
+        <span class="num lb__count" data-lb-count aria-live="polite"></span>
+      </figcaption>
+    </figure>
+    <button class="lb__btn lb__prev" type="button" data-lb-prev aria-label={labels.previous}><span aria-hidden="true">←</span></button>
+    <button class="lb__btn lb__next" type="button" data-lb-next aria-label={labels.next}><span aria-hidden="true">→</span></button>
+    <button class="lb__close" type="button" data-lb-close><span>{labels.close}</span><span aria-hidden="true" class="lb__x"></span></button>
+  </div>
+</dialog>
+
+<style>
+  .lb {
+    width: 100vw; height: 100dvh; max-width: none; max-height: none;
+    margin: 0; padding: 0; border: 0;
+    background: var(--charcoal);
+    color: var(--fg);
+  }
+  .lb::backdrop { background: rgb(18 15 13 / 0.96); }
+  .lb[open] { animation: lb-in 0.6s var(--ease-out); }
+  @keyframes lb-in { from { opacity: 0; } to { opacity: 1; } }
+  .lb__inner { position: relative; width: 100%; height: 100%; display: grid; place-items: center; padding: 4.5rem clamp(0.5rem, 6vw, 6rem) 1.25rem; }
+  .lb__figure { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 1rem; width: 100%; height: 100%; }
+  .lb__pic { display: grid; place-items: center; min-height: 0; }
+  .lb__pic img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: opacity 0.5s var(--ease); }
+  .lb.is-loading .lb__pic img { opacity: 0.25; }
+  .lb__caption { display: flex; justify-content: space-between; gap: 1.5rem; font-size: 0.85rem; color: var(--fg-soft); padding-inline: 0.5rem; }
+  .lb__count { white-space: nowrap; color: var(--accent); }
+  .lb__btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 3.5rem; height: 3.5rem; display: grid; place-items: center;
+    font-size: 1.3rem; font-weight: 200;
+    border: 1px solid var(--line); border-radius: 50%;
+    background: rgb(28 25 23 / 0.4);
+    transition: border-color 0.4s var(--ease);
+  }
+  .lb__btn:hover { border-color: var(--fg); }
+  .lb__prev { left: clamp(0.5rem, 1.5vw, 1.5rem); }
+  .lb__next { right: clamp(0.5rem, 1.5vw, 1.5rem); }
+  .lb__close {
+    position: absolute; top: 0.75rem; right: clamp(0.75rem, 2vw, 2rem);
+    display: inline-flex; align-items: center; gap: 0.9rem; min-height: 44px;
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .lb__x { position: relative; width: 22px; height: 22px; }
+  .lb__x::before, .lb__x::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: currentColor; transform: rotate(45deg); }
+  .lb__x::after { transform: rotate(-45deg); }
+  @media (max-width: 700px) {
+    .lb__btn { top: auto; bottom: 0.9rem; transform: none; width: 3rem; height: 3rem; }
+    .lb__inner { padding-bottom: 4.75rem; }
+    .lb__caption .lb__alt { display: none; }
+    .lb__caption { justify-content: center; }
+  }
+</style>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  if (dlg) {
+    const img = dlg.querySelector<HTMLImageElement>('[data-lb-img]')!;
+    const source = dlg.querySelector<HTMLSourceElement>('[data-lb-source]')!;
+    const altEl = dlg.querySelector<HTMLElement>('[data-lb-alt]')!;
+    const countEl = dlg.querySelector<HTMLElement>('[data-lb-count]')!;
+    const ofWord = dlg.dataset.of ?? '/';
+    let items: HTMLElement[] = [];
+    let index = 0;
+    let opener: HTMLElement | null = null;
+
+    const render = () => {
+      const el = items[index];
+      const im = el.querySelector('img')!;
+      const avif = el.querySelector<HTMLSourceElement>('source[type="image/avif"]');
+      dlg.classList.add('is-loading');
+      const sizes = '(min-width: 700px) 88vw, 100vw';
+      source.srcset = avif?.srcset ?? '';
+      source.sizes = sizes;
+      img.srcset = im.srcset;
+      img.sizes = sizes;
+      img.src = im.currentSrc || im.src;
+      img.width = Number(im.getAttribute('width'));
+      img.height = Number(im.getAttribute('height'));
+      img.alt = el.dataset.lbAlt ?? im.alt;
+      altEl.textContent = img.alt;
+      countEl.textContent = `${String(index + 1).padStart(2, '0')} ${ofWord} ${String(items.length).padStart(2, '0')}`;
+      img.decode?.().catch(() => {}).finally(() => dlg.classList.remove('is-loading'));
+    };
+    const go = (d: number) => { index = (index + d + items.length) % items.length; render(); };
+
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as HTMLElement).closest<HTMLElement>('[data-lb]');
+      if (!trigger) return;
+      e.preventDefault();
+      const group = trigger.closest('[data-lb-group]') ?? document;
+      items = [...group.querySelectorAll<HTMLElement>('[data-lb]')].filter((n) => !n.closest('[hidden]'));
+      index = items.indexOf(trigger);
+      opener = trigger;
+      render();
+      dlg.showModal();
+      document.documentElement.style.overflow = 'hidden';
+    });
+    dlg.querySelector('[data-lb-prev]')!.addEventListener('click', () => go(-1));
+    dlg.querySelector('[data-lb-next]')!.addEventListener('click', () => go(1));
+    dlg.querySelector('[data-lb-close]')!.addEventListener('click', () => dlg.close());
+    dlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; opener?.focus(); });
+    dlg.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') go(1);
+      if (e.key === 'ArrowLeft') go(-1);
+    });
+    // Swipe
+    let x0: number | null = null;
+    dlg.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    dlg.addEventListener('touchend', (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 45) go(dx < 0 ? 1 : -1);
+      x0 = null;
+    });
+    // Click outside the photo closes
+    dlg.addEventListener('click', (e) => { if (e.target === dlg || (e.target as HTMLElement).classList.contains('lb__inner')) dlg.close(); });
+  }
+</script>

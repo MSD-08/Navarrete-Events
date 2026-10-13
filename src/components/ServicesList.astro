@@ -1,0 +1,70 @@
+---
+import Img from './Img.astro';
+import { services } from '../copy/services';
+import type { Lang } from '../i18n/routes';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const items = services[lang];
+---
+<div class="svc">
+  <ol class="svc__list" role="list">
+    {items.map((s, i) => (
+      <li class="svc__item" data-svc={i} data-reveal style={`--delay:${i * 0.08}s`}>
+        <span class="num svc__n">{String(i + 1).padStart(2, '0')}</span>
+        <h3 class="svc__title serif">{s.title}</h3>
+        <p class="svc__text">{s.text}</p>
+        <div class="svc__thumb media" aria-hidden="true"><Img id={s.image} alt="" sizes="40vw" /></div>
+      </li>
+    ))}
+  </ol>
+  <div class="svc__preview" aria-hidden="true">
+    {items.map((s, i) => (
+      <div class:list={['svc__img', { 'is-active': i === 0 }]} data-svc-img={i}>
+        <Img id={s.image} alt="" sizes="(min-width: 900px) 30vw, 1px" />
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .svc { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 6rem); align-items: start; }
+  .svc__list { border-top: 1px solid var(--line); }
+  .svc__item {
+    display: grid;
+    grid-template-columns: 3.2rem minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.5rem 2rem;
+    align-items: baseline;
+    padding-block: clamp(1.6rem, 3vw, 2.6rem);
+    border-bottom: 1px solid var(--line);
+    transition: padding 0.7s var(--ease-out);
+  }
+  .svc__n { font-size: 1rem; }
+  .svc__title { font-size: clamp(1.7rem, 3vw, 3rem); line-height: 1.05; letter-spacing: -0.02em; transition: transform 0.8s var(--ease-out), color 0.5s var(--ease); }
+  .svc__item:hover .svc__title, .svc__item.is-active .svc__title { font-style: italic; transform: translateX(0.4rem); }
+  .svc__text { color: var(--fg-soft); max-width: 26rem; }
+  .svc__thumb { display: none; }
+  .svc__preview { position: sticky; top: calc(var(--header-h) + 2rem); aspect-ratio: 4 / 5; }
+  .svc__img { position: absolute; inset: 0; opacity: 0; transition: opacity 1s var(--ease); }
+  .svc__img.is-active { opacity: 1; }
+  .svc__img :global(picture), .svc__img :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 899px) {
+    .svc { grid-template-columns: 1fr; }
+    .svc__preview { display: none; }
+    .svc__item { grid-template-columns: 2.4rem minmax(0, 1fr); }
+    .svc__text { grid-column: 2; }
+    .svc__thumb { display: block; grid-column: 2; margin-top: 1rem; aspect-ratio: 16 / 10; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.svc').forEach((root) => {
+    const items = root.querySelectorAll<HTMLElement>('[data-svc]');
+    const imgs = root.querySelectorAll<HTMLElement>('[data-svc-img]');
+    const activate = (n: string) => {
+      imgs.forEach((im) => im.classList.toggle('is-active', im.dataset.svcImg === n));
+      items.forEach((it) => it.classList.toggle('is-active', it.dataset.svc === n));
+    };
+    items.forEach((it) => it.addEventListener('pointerenter', () => activate(it.dataset.svc!)));
+  });
+</script>

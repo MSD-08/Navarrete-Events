@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+import Img from '../components/Img.astro';
+import { path, otherLang, type Lang } from '../i18n/routes';
+import { contact } from '../copy/contact';
+import { site, whatsappLink } from '../data/site';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = contact[lang];
+const wa = whatsappLink();
+---
+<Base lang={lang} title={c.meta.title} description={c.meta.description} alternate={path(otherLang(lang), 'contact')} current="contact" image="boda-sf/g11">
+  <section class="ct">
+    <div class="ct__copy wrap">
+      <p class="label label--rule" data-reveal>{c.label}</p>
+      <h1 class="display ct__title" data-reveal><em>{c.title}</em></h1>
+      <p class="lead ct__lede" data-reveal>{c.lede}</p>
+
+      <dl class="ct__list">
+        <div class="ct__item" data-reveal>
+          <dt class="label">{c.inquiryLabel}</dt>
+          <dd>
+            <p>{c.inquiryText}</p>
+            <a class="btn mt-s" href={path(lang, 'inquiry')}>{c.inquiryCta}</a>
+          </dd>
+        </div>
+        <div class="ct__item" data-reveal>
+          <dt class="label">{c.instagramLabel}</dt>
+          <dd>
+            <a class="ct__big serif" href={site.social.instagram.url} rel="me noopener" target="_blank">{site.social.instagram.handle}</a>
+            <p class="ct__muted">{c.instagramText}</p>
+          </dd>
+        </div>
+        {site.contact.email && (
+          <div class="ct__item" data-reveal>
+            <dt class="label">{c.emailLabel}</dt>
+            <dd><a class="ct__big serif" href={`mailto:${site.contact.email}`}>{site.contact.email}</a></dd>
+          </div>
+        )}
+        {wa && (
+          <div class="ct__item" data-reveal>
+            <dt class="label">{c.whatsappLabel}</dt>
+            <dd><a class="ct__big serif" href={wa} rel="noopener" target="_blank">{site.contact.phoneDisplay ?? 'WhatsApp'}</a></dd>
+          </div>
+        )}
+        <div class="ct__item" data-reveal>
+          <dt class="label">{c.studioLabel}</dt>
+          <dd>
+            <p class="ct__big serif">{c.studioText}</p>
+          </dd>
+        </div>
+      </dl>
+    </div>
+    <div class="ct__media media">
+      <Img id="boda-sf/g11" alt={lang === 'es' ? 'Fotografía en blanco y negro de dos novios frente a un muro de concreto' : 'A black-and-white photograph of two grooms before a concrete wall'} sizes="(min-width: 1000px) 42vw, 100vw" priority />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .ct { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); min-height: 100svh; }
+  .ct__copy { padding-top: calc(var(--header-h) + clamp(4rem, 9vw, 8rem)); padding-bottom: var(--section); display: grid; align-content: start; gap: 2rem; max-width: none; margin: 0; }
+  .ct__title { font-size: clamp(3.4rem, 9vw, 9.5rem); }
+  .ct__lede { max-width: 36rem; color: var(--fg-soft); }
+  .ct__list { margin-top: 2rem; display: grid; }
+  .ct__item { display: grid; grid-template-columns: 11rem 1fr; gap: 1rem 2rem; padding-block: 1.75rem; border-top: 1px solid var(--line); }
+  .ct__item dt { padding-top: 0.5rem; }
+  .ct__big { font-size: clamp(1.5rem, 2.6vw, 2.4rem); line-height: 1.2; letter-spacing: -0.01em; }
+  a.ct__big { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size 0.8s var(--ease-out); }
+  a.ct__big:hover { background-size: 100% 1px; }
+  .ct__muted { color: var(--fg-soft); margin-top: 0.4rem; }
+  .ct__media { position: sticky; top: var(--header-h); margin-top: var(--header-h); height: calc(100svh - var(--header-h)); }
+  .ct__media :global(picture), .ct__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 999px) {
+    .ct { grid-template-columns: 1fr; }
+    .ct__media { position: relative; top: 0; margin-top: 0; height: auto; aspect-ratio: 4 / 5; order: 2; }
+    .ct__copy { padding-bottom: 4rem; }
+  }
+  @media (max-width: 560px) {
+    .ct__item { grid-template-columns: 1fr; gap: 0.6rem; }
+  }
+</style>

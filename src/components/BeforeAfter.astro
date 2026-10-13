@@ -1,0 +1,71 @@
+---
+import Img from './Img.astro';
+import { getMedia } from '../lib/media';
+
+interface Props {
+  before: string;
+  after: string;
+  labels: { before: string; after: string; compare: string };
+  caption?: string;
+  alt: { before: string; after: string };
+  /** Frame aspect ratio, e.g. "3/4". Defaults to the "after" image ratio. */
+  ratio?: string;
+}
+const { before, after, labels, caption, alt, ratio } = Astro.props;
+const m = getMedia(after);
+const r = ratio ?? `${m.w}/${m.h}`;
+---
+<figure class="ba" data-ba>
+  <div class="ba__frame" style={`aspect-ratio:${r}`}>
+    <div class="ba__layer ba__after media"><Img id={after} alt={alt.after} sizes="(min-width: 900px) 60vw, 92vw" /></div>
+    <div class="ba__layer ba__before media" data-ba-before><Img id={before} alt={alt.before} sizes="(min-width: 900px) 60vw, 92vw" /></div>
+    <div class="ba__handle" data-ba-handle aria-hidden="true"><span></span></div>
+    <span class="ba__tag ba__tag--before label">{labels.before}</span>
+    <span class="ba__tag ba__tag--after label">{labels.after}</span>
+    <input class="ba__range" type="range" min="0" max="100" value="50" step="1" aria-label={labels.compare} data-ba-range />
+  </div>
+  {caption && <figcaption class="fig ba__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  .ba__frame { position: relative; overflow: hidden; user-select: none; --pos: 50%; background: var(--sand); }
+  .ba__layer { position: absolute; inset: 0; }
+  .ba__layer :global(picture), .ba__layer :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .ba__before { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+  .ba__handle { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 1px; background: #f7f2ea; transform: translateX(-0.5px); pointer-events: none; }
+  .ba__handle span {
+    position: absolute; top: 50%; left: 50%;
+    width: 3.25rem; height: 3.25rem;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid #f7f2ea;
+    background: rgb(28 25 23 / 0.35);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+  .ba__handle span::before, .ba__handle span::after {
+    content: ''; position: absolute; top: 50%; width: 0; height: 0; border-style: solid; transform: translateY(-50%);
+  }
+  .ba__handle span::before { left: 0.8rem; border-width: 5px 6px 5px 0; border-color: transparent #f7f2ea transparent transparent; }
+  .ba__handle span::after { right: 0.8rem; border-width: 5px 0 5px 6px; border-color: transparent transparent transparent #f7f2ea; }
+  .ba__tag { position: absolute; top: 1rem; padding: 0.35rem 0.7rem; background: rgb(28 25 23 / 0.55); color: #f7f2ea; pointer-events: none; }
+  .ba__tag--before { left: 1rem; }
+  .ba__tag--after { right: 1rem; }
+  .ba__range {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    margin: 0; opacity: 0; cursor: ew-resize;
+    -webkit-appearance: none; appearance: none;
+  }
+  .ba__range:focus-visible + .ba__tag, .ba__frame:has(.ba__range:focus-visible) { outline: 1.5px solid var(--fg); outline-offset: 4px; }
+  .ba__caption { margin-top: 0.9rem; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((root) => {
+    const frame = root.querySelector<HTMLElement>('.ba__frame')!;
+    const range = root.querySelector<HTMLInputElement>('[data-ba-range]')!;
+    const set = () => frame.style.setProperty('--pos', `${range.value}%`);
+    range.addEventListener('input', set);
+    set();
+  });
+</script>

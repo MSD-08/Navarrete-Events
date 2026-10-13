@@ -1,0 +1,121 @@
+---
+import '../styles/global.css';
+import bodoniUrl from '@fontsource-variable/bodoni-moda/files/bodoni-moda-latin-opsz-normal.woff2?url';
+import jostUrl from '@fontsource-variable/jost/files/jost-latin-wght-normal.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { ui } from '../copy/common';
+import { site } from '../data/site';
+import { largest } from '../lib/media';
+import type { Lang, RouteKey } from '../i18n/routes';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  /** URL of this page in the other language. */
+  alternate: string;
+  current?: RouteKey;
+  overlayHeader?: boolean;
+  /** Image id for social sharing. */
+  image?: string;
+  /** Preload the LCP image (AVIF srcset) for faster first paint. */
+  preload?: { id: string; srcset: string; sizes: string };
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  type?: 'website' | 'article';
+}
+
+const { lang, title, description, alternate, current, overlayHeader = false, image = 'boda-ta/hero', preload, noindex = false, jsonLd, type = 'website' } = Astro.props;
+const t = ui(lang);
+const base = site.url.replace(/\/$/, '');
+const pathname = Astro.url.pathname;
+const canonical = base + pathname;
+const altUrl = base + alternate;
+const esUrl = lang === 'es' ? canonical : altUrl;
+const enUrl = lang === 'en' ? canonical : altUrl;
+const fullTitle = title.includes('Navarrete') ? title : `${title} — Navarrete Events`;
+const ogImage = base + largest(image);
+---
+<!doctype html>
+<html lang={lang === 'es' ? 'es-MX' : 'en'} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="es" href={esUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={esUrl} />
+    <meta name="theme-color" content="#f7f2ea" />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <link rel="preload" href={bodoniUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={jostUrl} as="font" type="font/woff2" crossorigin />
+    {preload && <link rel="preload" as="image" type="image/avif" imagesrcset={preload.srcset} imagesizes={preload.sizes} fetchpriority="high" />}
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="Navarrete Events" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={lang === 'es' ? 'es_MX' : 'en_US'} />
+    <meta property="og:locale:alternate" content={lang === 'es' ? 'en_US' : 'es_MX'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t.skip}</a>
+    <Header lang={lang} alternate={alternate} current={current} overlay={overlayHeader} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer lang={lang} alternate={alternate} />
+
+    <script>
+      // Scroll reveals
+      const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('is-in');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        els.forEach((el) => io.observe(el));
+      } else {
+        els.forEach((el) => el.classList.add('is-in'));
+      }
+
+      // Remember an explicit language choice
+      document.querySelectorAll<HTMLAnchorElement>('[data-lang-switch]').forEach((a) =>
+        a.addEventListener('click', () => {
+          try { localStorage.setItem('ne-lang', a.dataset.langSwitch!); } catch {}
+        }),
+      );
+      try { localStorage.setItem('ne-lang', document.documentElement.lang.slice(0, 2)); } catch {}
+    </script>
+  </body>
+</html>

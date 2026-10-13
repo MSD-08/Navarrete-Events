@@ -1,0 +1,38 @@
+---
+import Img from './Img.astro';
+import { path, type Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+import { formatDate, readingTime, type Article } from '../lib/journal';
+
+interface Props { article: Article; lang: Lang; delay?: number; size?: 'md' | 'lg' }
+const { article: a, lang, delay = 0, size = 'md' } = Astro.props;
+const t = ui(lang);
+const min = readingTime(a.body);
+---
+<article class:list={['jc', `jc--${size}`]} data-reveal style={`--delay:${delay}s`}>
+  <a href={path(lang, 'journal', a.data.slug)} class="jc__link">
+    <div class="jc__media media"><Img id={a.data.cover} alt="" sizes={size === 'lg' ? '(min-width: 900px) 55vw, 92vw' : '(min-width: 900px) 30vw, 92vw'} /></div>
+    <p class="label jc__meta">
+      <span>{a.data.category}</span>
+      <span aria-hidden="true">·</span>
+      {a.data.draft ? <span class="jc__draft">{t.draft}</span> : a.data.date && <time datetime={a.data.date.toISOString()}>{formatDate(a.data.date, lang)}</time>}
+      <span aria-hidden="true">·</span>
+      <span>{min} min</span>
+    </p>
+    <h3 class="jc__title serif">{a.data.title}</h3>
+    <p class="jc__dek">{a.data.dek}</p>
+  </a>
+</article>
+
+<style>
+  .jc__media { aspect-ratio: 4 / 3; }
+  .jc--lg .jc__media { aspect-ratio: 16 / 11; }
+  .jc__media :global(img) { transition: transform 1.8s var(--ease-out); }
+  .jc__link:hover .jc__media :global(img) { transform: scale(1.035); }
+  .jc__meta { margin-top: 1.3rem; flex-wrap: wrap; gap: 0.5em; }
+  .jc__draft { color: var(--accent); }
+  .jc__title { margin-top: 0.7rem; font-size: clamp(1.45rem, 2vw, 2rem); line-height: 1.15; letter-spacing: -0.01em; }
+  .jc--lg .jc__title { font-size: clamp(1.8rem, 3.2vw, 3.2rem); }
+  .jc__link:hover .jc__title { font-style: italic; }
+  .jc__dek { margin-top: 0.7rem; color: var(--fg-soft); max-width: 34rem; }
+</style>

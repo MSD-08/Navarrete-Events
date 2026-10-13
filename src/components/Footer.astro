@@ -1,0 +1,130 @@
+---
+import LangSwitch from './LangSwitch.astro';
+import { path, type Lang } from '../i18n/routes';
+import { ui } from '../copy/common';
+import { site, whatsappLink } from '../data/site';
+
+interface Props { lang: Lang; alternate: string }
+const { lang, alternate } = Astro.props;
+const t = ui(lang);
+const year = new Date().getFullYear();
+const wa = whatsappLink();
+const socials = [
+  site.social.instagram && { name: 'Instagram', ...site.social.instagram },
+  site.social.facebook && { name: 'Facebook', ...site.social.facebook },
+  site.social.tiktok && { name: 'TikTok', ...site.social.tiktok },
+  site.social.pinterest && { name: 'Pinterest', ...site.social.pinterest },
+].filter(Boolean) as { name: string; handle: string; url: string }[];
+---
+<footer class="ftr is-charcoal grain">
+  <div class="wrap">
+    <div class="ftr__invite">
+      <p class="label label--rule">{t.footer.invite}</p>
+      <a class="ftr__invite-link" href={path(lang, 'inquiry')}>
+        <span class="serif">{t.footer.inviteCta}</span>
+        <span class="ftr__arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="ftr__grid">
+      <div class="ftr__brand">
+        <img src="/brand/logo.png" width="900" height="472" alt="Navarrete — Wedding & Event Planner" loading="lazy" decoding="async" />
+        <p class="ftr__statement serif">{t.footer.statement}</p>
+      </div>
+
+      <nav class="ftr__col" aria-label={t.footer.explore}>
+        <p class="label">{t.footer.explore}</p>
+        <ul role="list">
+          {(['portfolio', 'experience', 'studio', 'journal'] as const).map((k) => <li><a href={path(lang, k)}>{t.nav[k]}</a></li>)}
+        </ul>
+      </nav>
+
+      <div class="ftr__col">
+        <p class="label">{t.nav.contact}</p>
+        <ul role="list">
+          <li><a href={path(lang, 'inquiry')}>{t.nav.inquiry}</a></li>
+          {site.contact.email && <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>}
+          {wa && <li><a href={wa} rel="noopener" target="_blank">WhatsApp {site.contact.phoneDisplay}</a></li>}
+          <li><a href={path(lang, 'contact')}>{t.nav.contact}</a></li>
+          <li class="ftr__muted">{t.location}</li>
+        </ul>
+      </div>
+
+      <div class="ftr__col">
+        <p class="label">{t.footer.follow}</p>
+        <ul role="list">
+          {socials.map((s) => <li><a href={s.url} rel="me noopener" target="_blank">{s.name} <span class="ftr__muted">{s.handle}</span></a></li>)}
+        </ul>
+        <div class="ftr__lang"><LangSwitch lang={lang} alternate={alternate} /></div>
+      </div>
+    </div>
+
+    <div class="ftr__base">
+      <p>© {year} Navarrete Events. {t.footer.rights}</p>
+      <ul role="list">
+        <li><a href={path(lang, 'privacy')}>{t.nav.privacy}</a></li>
+        <li><a href={`${path(lang, 'privacy')}#cookies`}>{t.footer.cookies}</a></li>
+        <li><a href={path(lang, 'accessibility')}>{t.nav.accessibility}</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ftr { padding-block: clamp(4.5rem, 9vw, 8rem) 2rem; }
+  .ftr__invite {
+    display: grid;
+    gap: 1.25rem;
+    padding-bottom: clamp(3.5rem, 7vw, 6rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .ftr__invite-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4em;
+    font-size: clamp(2.3rem, 6.4vw, 6.4rem);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    width: fit-content;
+  }
+  .ftr__invite-link .serif { font-style: italic; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size 0.9s var(--ease-out); padding-bottom: 0.08em; }
+  .ftr__invite-link:hover .serif { background-size: 100% 1px; }
+  .ftr__arrow { font-family: var(--sans); font-weight: 200; font-size: 0.6em; transition: transform 0.7s var(--ease-out); }
+  .ftr__invite-link:hover .ftr__arrow { transform: translateX(0.3em); }
+
+  .ftr__grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+    gap: 3rem 2rem;
+    padding-block: clamp(3.5rem, 6vw, 5rem);
+  }
+  .ftr__brand img { width: min(220px, 60%); height: auto; opacity: 0.95; }
+  .ftr__statement { margin-top: 1.75rem; max-width: 22rem; font-size: 1.15rem; line-height: 1.5; color: var(--fg-soft); font-style: italic; }
+  .ftr__col ul { margin-top: 1.25rem; display: grid; gap: 0.35rem; }
+  .ftr__col a { display: inline-block; padding-block: 0.3rem; transition: color 0.4s var(--ease); }
+  .ftr__col a:hover { color: var(--accent); }
+  .ftr__muted { color: var(--fg-soft); }
+  .ftr__lang { margin-top: 1.5rem; margin-left: -0.25rem; }
+
+  .ftr__base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.8rem;
+    color: var(--fg-soft);
+  }
+  .ftr__base ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; }
+  .ftr__base a { display: inline-block; padding-block: 0.4rem; }
+  .ftr__base a:hover { color: var(--fg); }
+
+  @media (max-width: 900px) {
+    .ftr__grid { grid-template-columns: 1fr 1fr; }
+    .ftr__brand { grid-column: 1 / -1; }
+  }
+  @media (max-width: 520px) {
+    .ftr__grid { grid-template-columns: 1fr; }
+  }
+</style>
