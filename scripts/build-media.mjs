@@ -15,10 +15,11 @@
 import { readdir, mkdir, stat, writeFile, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import sharp from 'sharp';
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'photos');
 const OUT = path.join(ROOT, 'public', 'media');
 const MANIFEST = path.join(ROOT, 'src', 'data', 'media.json');
