@@ -166,7 +166,7 @@ const wa = whatsappLink();
         </div>
       </div>
 
-      <div class="fld fld--consent" data-field="consent">
+      <div class="fld fld--consent" data-field="consent" data-label={lang === "es" ? "Aviso de privacidad" : "Privacy notice"}>
         <label class="check">
           <input type="checkbox" name="consent" value="yes" required aria-describedby="iq-consent-err" />
           <span set:html={f.consent.label} />
@@ -324,7 +324,7 @@ const wa = whatsappLink();
         const a = document.createElement('a');
         const labelEl = fieldOf(p.name)?.querySelector('label, legend');
         a.href = `#${p.target}`;
-        a.textContent = `${(labelEl?.textContent ?? p.name).split('·')[0].trim()} — ${p.msg}`;
+        a.textContent = `${fieldOf(p.name)?.dataset.label ?? (labelEl?.textContent ?? p.name).split('·')[0].trim()} — ${p.msg}`;
         a.addEventListener('click', (ev) => {
           ev.preventDefault();
           const target = document.getElementById(p.target) ?? fieldOf(p.name)?.querySelector<HTMLElement>('input, textarea, select');
@@ -343,7 +343,7 @@ const wa = whatsappLink();
       const fd = new FormData(form);
       const L = copy.labels;
       const opt = (k: string, v: string) => L[k]?.options?.[v] ?? v;
-      const line = (k: string, v: string) => (v ? `${strip(L[k].label)}: ${v}` : '');
+      const line = (k: string, v: string) => (v ? `${strip(L[k].label)}: ${v}` : null);
       const services = fd.getAll('services').map((s) => opt('services', String(s))).join(', ');
       const g = (k: string) => String(fd.get(k) ?? '').trim();
       const lines = [
@@ -369,7 +369,7 @@ const wa = whatsappLink();
         '',
         line('source', g('source') ? opt('source', g('source')) : ''),
       ];
-      return lines.filter((l, i, arr) => l !== '' || (arr[i - 1] !== '' && i > 0)).join('\n').trim();
+      return (lines.filter((l) => l !== null) as string[]).filter((l, i, arr) => l !== '' || (i > 0 && arr[i - 1] !== '')).join('\n').trim();
     };
 
     const show = (state: 'form' | 'success' | 'manual' | 'failure') => {
